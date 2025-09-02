@@ -6,307 +6,394 @@
     <title>Calculator</title>
     <style>
         body {
+            background: linear-gradient(120deg, #d3cce3, #e9e4f0 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 90vh;
+            min-height: 100vh;
             margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
         .calculator {
+            background: #fff;
+            box-shadow: 0 5px 30px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            padding: 30px 24px 24px 24px;
+            min-width: 340px;
             text-align: center;
+        }
+        h1 {
+            font-size: 1.3em;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #5a5a5a;
+        }
+        .display {
+            width: 100%;
+            padding: 16px 8px;
+            margin-bottom: 24px;
+            font-size: 1.4em;
+            border: none;
+            border-radius: 10px;
+            background: #f7f7fa;
+            text-align: right;
+            color: #333;
+            outline: none;
+            box-sizing: border-box;
         }
         .buttons {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-        .calculator input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            font-size: 18px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            text-align: right;
+            gap: 12px;
         }
         .calculator button {
-            padding: 15px;
-            font-size: 18px;
+            padding: 16px 0;
+            font-size: 1.15em;
             border: none;
-            border-radius: 5px;
+            border-radius: 10px;
             cursor: pointer;
-            background-color: #f0f0f0;
+            background: #828bfa;
+            color: #fff;
+            transition: background 0.2s;
+            font-weight: 500;
         }
         .calculator button:hover {
-            background-color: #ddd;
+            background: #4950b5;
         }
-        .buttons button {
-            padding: 15px;
-            font-size: 18px;
-            border: none;
-            background-color: #007bff;
+        .calculator .operation {
+            background: #33cabb;
+        }
+        .calculator .operation:hover {
+            background: #209b8d;
+        }
+        .calculator .util {
+            background: #f8a54c;
             color: #fff;
-            border-radius: 5px;
-            cursor: pointer;
+        }
+        .calculator .util:hover {
+            background: #d77c17;
+        }
+        .calculator .text {
+            background: #e5e7e9;
+            color: #595959;
+        }
+        .calculator .text:hover {
+            background: #d0d2d3;
+        }
+        .calculator .equal {
+            background: #FF5C5C;
+            color: #fff;
+        }
+        .calculator .equal:hover {
+            background: #D93B3B;
         }
     </style>
 </head>
 <body>
-    <div class="calculator">
-        <h1>Hujyrah no Casio</h1>
-        <input type="text" id="display" placeholder="0" readonly value="">
-        <div class="buttons">
-            <button onclick="enterValue('7')">7</button>
-            <button onclick="enterValue('8')">8</button>
-            <button onclick="enterValue('9')">9</button>
-            <button onclick="operation('*')">*</button>
+<div class="calculator">
+    <h1>Hujyrah no Casio</h1>
+    <input type="text" id="display" class="display" placeholder="0" readonly value="">
+    <div class="buttons">
+        <button onclick="enterValue('7')">7</button>
+        <button onclick="enterValue('8')">8</button>
+        <button onclick="enterValue('9')">9</button>
+        <button onclick="setOperation('*')" class="operation">*</button>
 
-            <button onclick="enterValue('4')">4</button>
-            <button onclick="enterValue('5')">5</button>
-            <button onclick="enterValue('6')">6</button>
-            <button onclick="operation('/')">/</button>
+        <button onclick="enterValue('4')">4</button>
+        <button onclick="enterValue('5')">5</button>
+        <button onclick="enterValue('6')">6</button>
+        <button onclick="setOperation('/')" class="operation">/</button>
 
-            <button onclick="enterValue('1')">1</button>
-            <button onclick="enterValue('2')">2</button>
-            <button onclick="enterValue('3')">3</button>
-            <button onclick="operation('+')">+</button>
+        <button onclick="enterValue('1')">1</button>
+        <button onclick="enterValue('2')">2</button>
+        <button onclick="enterValue('3')">3</button>
+        <button onclick="setOperation('+')" class="operation">+</button>
 
-            <button onclick="clearDisplay()">C</button>
-            <button onclick="enterValue('0')">0</button>
-            <button onclick="enterValue('.')">.</button>
-            <button onclick="operation('-')">-</button>
+        <button onclick="clearDisplay()" class="util">C</button>
+        <button onclick="enterValue('0')">0</button>
+        <button onclick="enterValue('.')" class="util">.</button>
+        <button onclick="setOperation('-')" class="operation">-</button>
 
-            <button onclick="convertToText('ru')">Text (RU)</button>
-            <button onclick="convertToText('en')">Text (EN)</button>
-            <button onclick="calculate()">=</button>
-            <button onclick="delSymbol()">⬅️</button>
-        </div>
+        <button onclick="convertToText('ru')" class="text">Text RU</button>
+        <button onclick="convertToText('en')" class="text">Text EN</button>
+        <button onclick="calculate()" class="equal">=</button>
+        <button onclick="delSymbol()" class="util">⬅️</button>
     </div>
-    <script>
-        let firstValue = null;
-        let operator = null;
+</div>
+<script>
+    let firstValue = null;
+    let operator = null;
+    let waitingForSecondValue = false;
 
-        function enterValue(char) {
-            let displayValue = document.getElementById("display").value;
-            if (char === "." && displayValue.includes(".")) {
-                return;
-            }
-            document.getElementById("display").value += char;
+    function enterValue(char) {
+        const display = document.getElementById("display");
+        let value = display.value;
+
+        // Start new input after calculation
+        if (value === "Error" || value === "Division by zero" || value === '' || waitingForSecondValue) {
+            value = '';
+            waitingForSecondValue = false;
         }
 
-        function clearDisplay() {
-            document.getElementById("display").value = "";
+        // Prevent multiple dots in one number part
+        if (char === '.') {
+            const parts = value.split(/[\+\-\*\/]/);
+            if (parts[parts.length - 1].includes('.')) return;
+            if (parts[parts.length - 1] === '') value += '0'; // ".5" => "0.5"
         }
 
-        function delSymbol() {
-            let displayValue = document.getElementById("display").value;
-            document.getElementById("display").value = displayValue.slice(0, -1);
+        display.value = value + char;
+    }
+
+    function clearDisplay() {
+        document.getElementById("display").value = "";
+        firstValue = null;
+        operator = null;
+        waitingForSecondValue = false;
+    }
+
+    function delSymbol() {
+        let display = document.getElementById("display");
+        display.value = display.value.slice(0, -1);
+    }
+
+    function setOperation(op) {
+        const display = document.getElementById("display");
+        let value = display.value;
+
+        // If operation pressed after result, use result as firstValue
+        if (value === "Error" || value === "Division by zero" || value === "") return;
+
+        if (operator !== null && !waitingForSecondValue) {
+            calculate();
+            value = display.value;
         }
 
-        function operation(op) {
-            firstValue = parseFloat(document.getElementById("display").value);
-            operator = op;
-            document.getElementById("display").value = "";
+        firstValue = parseFloat(value);
+        operator = op;
+        waitingForSecondValue = true;
+    }
+
+    function calculate() {
+        const display = document.getElementById("display");
+        let value = display.value;
+        if (operator === null || firstValue === null) {
+            display.value = "Error";
+            return;
         }
 
-        function calculate() {
-            let secondValue = parseFloat(document.getElementById("display").value);
-            let result;
+        let secondValue = parseFloat(value);
+        if (isNaN(secondValue)) {
+            display.value = "Error";
+            return;
+        }
 
-            if (operator === null || firstValue === null || isNaN(secondValue)) {
-                document.getElementById("display").value = "Error";
-                return;
-            }
-
-            switch (operator) {
-                case '+':
-                    result = firstValue + secondValue;
-                    break;
-                case '-':
-                    result = firstValue - secondValue;
-                    break;
-                case '*':
-                    result = firstValue * secondValue;
-                    break;
-                case '/':
-                    if (secondValue === 0) {
-                        document.getElementById("display").value = "Division by zero";
-                        return;
-                    }
-                    result = firstValue / secondValue;
-                    break;
-                default:
-                    document.getElementById("display").value = "Error";
+        let result;
+        switch (operator) {
+            case '+':
+                result = firstValue + secondValue;
+                break;
+            case '-':
+                result = firstValue - secondValue;
+                break;
+            case '*':
+                result = firstValue * secondValue;
+                break;
+            case '/':
+                if (secondValue === 0) {
+                    display.value = "Division by zero";
+                    firstValue = null;
+                    operator = null;
+                    waitingForSecondValue = false;
                     return;
-            }
-
-            document.getElementById("display").value = result;
-            firstValue = null;
-            operator = null;
-        }
-
-        document.addEventListener('keydown', function(event) {
-            const key = event.key;
-
-            if (/[0-9\.]/.test(key)) {
-                enterValue(key);
-            } else if (['+', '-', '*', '/'].includes(key)) {
-                operation(key);
-            } else if (key === 'Enter' || key === '=') {
-                calculate();
-            } else if (key === 'Backspace' || key === 'Delete' || key === 'c' || key === 'C') {
-                clearDisplay();
-            }
-        });
-
-        function numberToWordsRu(n) {
-            if (n === 0) return "ноль";
-            const units = ["", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять"];
-            const teens = ["десять", "одиннадцать", "двенадцать", "тринадцать", "четырнадцать",
-                          "пятнадцать", "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать"];
-            const tens = ["", "десять", "двадцать", "тридцать", "сорок", "пятьдесят",
-                         "шестьдесят", "семьдесят", "восемьдесят", "девяносто"];
-            const hundreds = ["", "сто", "двести", "триста", "четыреста", "пятьсот",
-                             "шестьсот", "семьсот", "восемьсот", "девятьсот"];
-            const forms = {
-                "тысяча": ["тысяча", "тысячи", "тысяч"],
-                "миллион": ["миллион", "миллиона", "миллионов"],
-                "миллиард": ["миллиард", "миллиарда", "миллиардов"],
-            };
-
-            function getForm(value, forms) {
-                if (10 <= value % 100 && value % 100 <= 20) return forms[2];
-                if (value % 10 === 1) return forms[0];
-                if (2 <= value % 10 && value % 10 <= 4) return forms[1];
-                return forms[2];
-            }
-
-            function threeDigitsToWords(num) {
-                let words = [];
-                if (num >= 100) {
-                    words.push(hundreds[Math.floor(num / 100)]);
-                    num %= 100;
                 }
-                if (num >= 20) {
-                    words.push(tens[Math.floor(num / 10)]);
-                    num %= 10;
-                }
-                if (num >= 10) {
-                    words.push(teens[num - 10]);
-                    num = 0;
-                }
-                if (num > 0) {
-                    words.push(units[num]);
-                }
-                return words;
-            }
-
-            let parts = [];
-            const groups = [["", 0], ["тысяча", 1], ["миллион", 2], ["миллиард", 3]];
-            let groupIndex = 0;
-            let integerPart = Math.floor(n);
-            let fractionalPart = Math.round((n - integerPart) * 100);
-
-            while (integerPart > 0) {
-                const currentGroup = integerPart % 1000;
-                if (currentGroup > 0) {
-                    let words = threeDigitsToWords(currentGroup);
-                    if (groups[groupIndex][1] === 1) {
-                        if (words[0] === 'один') words[0] = 'одна';
-                        if (words[0] === 'два') words[0] = 'две';
-                    }
-                    if (groups[groupIndex][0]) {
-                        words.push(getForm(currentGroup, forms[groups[groupIndex][0]]));
-                    }
-                    parts.push(words.join(' '));
-                }
-                integerPart = Math.floor(integerPart / 1000);
-                groupIndex++;
-            }
-
-            let result = parts.reverse().join(' ').trim();
-            if (fractionalPart > 0) {
-                result += ` целых ${fractionalPart} сотых`;
-            }
-            return result.toUpperCase();
-        }
-
-        function numberToWordsEn(n) {
-            if (n === 0) return "zero";
-            const units = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
-            const teens = ["ten", "eleven", "twelve", "thirteen", "fourteen",
-                          "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
-            const tens = ["", "ten", "twenty", "thirty", "forty", "fifty",
-                         "sixty", "seventy", "eighty", "ninety"];
-            const hundreds = ["", "one hundred", "two hundred", "three hundred", "four hundred", "five hundred",
-                             "six hundred", "seven hundred", "eight hundred", "nine hundred"];
-
-            function threeDigitsToWords(num) {
-                let words = [];
-                if (num >= 100) {
-                    words.push(hundreds[Math.floor(num / 100)]);
-                    num %= 100;
-                }
-                if (num >= 20) {
-                    words.push(tens[Math.floor(num / 10)]);
-                    num %= 10;
-                }
-                if (num >= 10) {
-                    words.push(teens[num - 10]);
-                    num = 0;
-                }
-                if (num > 0) {
-                    words.push(units[num]);
-                }
-                return words;
-            }
-
-            let parts = [];
-            const groups = ["", "thousand", "million", "billion"];
-            let groupIndex = 0;
-            let integerPart = Math.floor(n);
-            let fractionalPart = Math.round((n - integerPart) * 100);
-
-            while (integerPart > 0) {
-                const currentGroup = integerPart % 1000;
-                if (currentGroup > 0) {
-                    let words = threeDigitsToWords(currentGroup);
-                    if (groups[groupIndex]) {
-                        words.push(groups[groupIndex]);
-                    }
-                    parts.push(words.join(' '));
-                }
-                integerPart = Math.floor(integerPart / 1000);
-                groupIndex++;
-            }
-
-            let result = parts.reverse().join(' ').trim();
-            if (fractionalPart > 0) {
-                result += ` and ${fractionalPart}/100`;
-            }
-            return result.toUpperCase();
-        }
-
-        function convertToText(lang) {
-            const display = document.getElementById("display");
-            const value = parseFloat(display.value);
-
-            if (isNaN(value)) {
+                result = firstValue / secondValue;
+                break;
+            default:
                 display.value = "Error";
                 return;
-            }
-
-            let result;
-            if (lang === 'ru') {
-                result = numberToWordsRu(value);
-            } else if (lang === 'en') {
-                result = numberToWordsEn(value);
-            } else {
-                result = "Language not supported";
-            }
-
-            display.value = result;
         }
-    </script>
+
+        // Show up to 8 decimals max
+        display.value = parseFloat(result.toFixed(8)).toString();
+        firstValue = null;
+        operator = null;
+        waitingForSecondValue = true;
+    }
+
+    document.addEventListener('keydown', function(event) {
+        const key = event.key;
+        if (/[0-9]/.test(key)) {
+            enterValue(key);
+        } else if (key === '.') {
+            enterValue('.');
+        } else if (['+', '-', '*', '/'].includes(key)) {
+            setOperation(key);
+        } else if (key === 'Enter' || key === '=') {
+            calculate();
+        } else if (key === 'Backspace') {
+            delSymbol();
+        } else if (key.toLowerCase() === 'c') {
+            clearDisplay();
+        }
+    });
+
+    // ---- Number to Words (RU/EN) ----
+
+    function numberToWordsRu(n) {
+        if (isNaN(n)) return "Ошибка";
+        if (n === 0) return "ноль";
+        const units = ["", "один", "два", "три", "четыре", "пять", "шесть", "семь", "восемь", "девять"];
+        const teens = ["десять", "одиннадцать", "двенадцать", "тринадцать", "четырнадцать",
+            "пятнадцать", "шестнадцать", "семнадцать", "восемнадцать", "девятнадцать"];
+        const tens = ["", "десять", "двадцать", "тридцать", "сорок", "пятьдесят",
+            "шестьдесят", "семьдесят", "восемьдесят", "девяносто"];
+        const hundreds = ["", "сто", "двести", "триста", "четыреста", "пятьсот",
+            "шестьсот", "семьсот", "восемьсот", "девятьсот"];
+        const forms = {
+            "тысяча": ["тысяча", "тысячи", "тысяч"],
+            "миллион": ["миллион", "миллиона", "миллионов"],
+            "миллиард": ["миллиард", "миллиарда", "миллиардов"],
+        };
+
+        function getForm(value, forms) {
+            if (10 <= value % 100 && value % 100 <= 20) return forms[2];
+            if (value % 10 === 1) return forms[0];
+            if (2 <= value % 10 && value % 10 <= 4) return forms[1];
+            return forms[2];
+        }
+
+        function threeDigitsToWords(num, group) {
+            let words = [];
+            if (num >= 100) {
+                words.push(hundreds[Math.floor(num / 100)]);
+                num %= 100;
+            }
+            if (num >= 20) {
+                words.push(tens[Math.floor(num / 10)]);
+                num %= 10;
+            }
+            if (num >= 10) {
+                words.push(teens[num - 10]);
+                num = 0;
+            }
+            if (num > 0) {
+                // For thousands, "один"/"два" -> "одна"/"две"
+                if (group === "тысяча") {
+                    if (num === 1) words.push("одна");
+                    else if (num === 2) words.push("две");
+                    else words.push(units[num]);
+                } else {
+                    words.push(units[num]);
+                }
+            }
+            return words;
+        }
+
+        let parts = [];
+        const groups = [["", 0], ["тысяча", 1], ["миллион", 2], ["миллиард", 3]];
+        let groupIndex = 0;
+        let integerPart = Math.floor(Math.abs(n));
+        let fractionalPart = Math.round((Math.abs(n) - integerPart) * 100);
+
+        while (integerPart > 0) {
+            const currentGroup = integerPart % 1000;
+            if (currentGroup > 0) {
+                let words = threeDigitsToWords(currentGroup, groups[groupIndex][0]);
+                if (groups[groupIndex][0]) {
+                    words.push(getForm(currentGroup, forms[groups[groupIndex][0]]));
+                }
+                parts.push(words.join(' '));
+            }
+            integerPart = Math.floor(integerPart / 1000);
+            groupIndex++;
+        }
+
+        let result = parts.reverse().join(' ').trim();
+        if (n < 0) result = "минус " + result;
+        if (fractionalPart > 0) {
+            result += ` целых ${fractionalPart} сотых`;
+        }
+        return result.toUpperCase();
+    }
+
+    function numberToWordsEn(n) {
+        if (isNaN(n)) return "ERROR";
+        if (n === 0) return "zero";
+        const units = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+        const teens = ["ten", "eleven", "twelve", "thirteen", "fourteen",
+            "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"];
+        const tens = ["", "ten", "twenty", "thirty", "forty", "fifty",
+            "sixty", "seventy", "eighty", "ninety"];
+        const hundreds = ["", "one hundred", "two hundred", "three hundred", "four hundred", "five hundred",
+            "six hundred", "seven hundred", "eight hundred", "nine hundred"];
+
+        function threeDigitsToWords(num) {
+            let words = [];
+            if (num >= 100) {
+                words.push(hundreds[Math.floor(num / 100)]);
+                num %= 100;
+            }
+            if (num >= 20) {
+                words.push(tens[Math.floor(num / 10)]);
+                num %= 10;
+            }
+            if (num >= 10) {
+                words.push(teens[num - 10]);
+                num = 0;
+            }
+            if (num > 0) {
+                words.push(units[num]);
+            }
+            return words;
+        }
+
+        let parts = [];
+        const groups = ["", "thousand", "million", "billion"];
+        let groupIndex = 0;
+        let integerPart = Math.floor(Math.abs(n));
+        let fractionalPart = Math.round((Math.abs(n) - integerPart) * 100);
+
+        while (integerPart > 0) {
+            const currentGroup = integerPart % 1000;
+            if (currentGroup > 0) {
+                let words = threeDigitsToWords(currentGroup);
+                if (groups[groupIndex]) {
+                    words.push(groups[groupIndex]);
+                }
+                parts.push(words.join(' '));
+            }
+            integerPart = Math.floor(integerPart / 1000);
+            groupIndex++;
+        }
+
+        let result = parts.reverse().join(' ').trim();
+        if (n < 0) result = "minus " + result;
+        if (fractionalPart > 0) {
+            result += ` and ${fractionalPart}/100`;
+        }
+        return result.toUpperCase();
+    }
+
+    function convertToText(lang) {
+        const display = document.getElementById("display");
+        const value = parseFloat(display.value);
+
+        if (isNaN(value)) {
+            display.value = "Error";
+            return;
+        }
+        let result;
+        if (lang === 'ru') {
+            result = numberToWordsRu(value);
+        } else if (lang === 'en') {
+            result = numberToWordsEn(value);
+        } else {
+            result = "Language not supported";
+        }
+        display.value = result;
+        waitingForSecondValue = true;
+    }
+</script>
 </body>
 </html>
