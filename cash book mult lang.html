@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Cash Book | Кассовая книга | دفتر النقدية</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --primary: #1976d2;
+      --success: #268d2e;
+      --danger: #e53935;
+      --text: #333;
+      --bg: #f6f8fa;
+      --card-bg: #fff;
+      --border: #d1d5db;
+      --compact-padding: 6px;
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body { 
+      font-family: Arial, sans-serif; 
+      margin: 0; 
+      padding: 0; 
+      background: var(--bg); 
+      color: var(--text);
+      direction: ltr;
+      font-size: 14px;
+    }
+    
+    .container { 
+      max-width: 1000px; 
+      margin: 0 auto; 
+      padding: 12px; 
+    }
+    
+    h1 { 
+      text-align: center; 
+      margin: 0 0 15px 0;
+      font-size: 1.4em;
+    }
+    
+    .lang-selector {
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    
+    .lang-btn {
+      background: none;
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      margin: 0 3px;
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    
+    .lang-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+    
+    .compact-section { 
+      margin-bottom: 12px; 
+      background: var(--card-bg);
+      border-radius: 4px;
+      padding: 10px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .compact-form { 
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 6px;
+    }
+    
+    .compact-form input, 
+    .compact-form select, 
+    .compact-form button { 
+      padding: var(--compact-padding);
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+    }
+    
+    .compact-form input[type="date"] { 
+      min-width: 110px; 
+    }
+    
+    .compact-form input[type="number"] { 
+      max-width: 100px; 
+    }
+    
+    .compact-form button { 
+      background: var(--success); 
+      color: #fff; 
+      border: none; 
+      cursor: pointer; 
+    }
+    
+    .compact-form button:hover { 
+      background: #1f6823; 
+    }
+    
+    .compact-controls { 
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 6px;
+    }
+    
+    .compact-controls input, 
+    .compact-controls button { 
+      padding: var(--compact-padding);
+      font-size: 13px;
+      border: 1px solid var(--border);
+      border-radius: 3px;
+    }
+    
+    .compact-controls input { 
+      min-width: 0;
+    }
+    
+    .compact-controls button { 
+      background: var(--primary); 
+      color: #fff; 
+      border: none; 
+      cursor: pointer; 
+      white-space: nowrap;
+    }
+    
+    .compact-controls button:hover { 
+      background: #1561a9; 
+    }
+    
+    .clear-btn { 
+      background: var(--danger) !important; 
+    }
+    
+    .clear-btn:hover { 
+      background: #b71c1c !important; 
+    }
+    
+    .compact-table { 
+      border-collapse: collapse; 
+      width: 100%; 
+      margin-top: 8px; 
+      background: var(--card-bg);
+      font-size: 13px;
+    }
+    
+    .compact-table th, 
+    .compact-table td { 
+      border: 1px solid var(--border); 
+      padding: 6px;
+      text-align: left; 
+    }
+    
+    .compact-table th { 
+      background: #e3eafc; 
+      cursor: pointer; 
+      font-weight: 600;
+      position: sticky;
+      top: 0;
+    }
+    
+    .income-row { 
+      background: #e7fbe8; 
+    }
+    
+    .expense-row { 
+      background: #ffeaea; 
+    }
+    
+    .empty-msg { 
+      text-align: center; 
+      color: #888; 
+      padding: 12px; 
+      font-style: italic;
+    }
+    
+    .compact-summary { 
+      background: var(--card-bg); 
+      border-radius: 4px; 
+      padding: 10px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    
+    .compact-summary h2 { 
+      margin: 0 0 6px 0; 
+      font-size: 1em; 
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+    }
+    
+    .compact-summary ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      max-height: 120px;
+      overflow-y: auto;
+    }
+    
+    .compact-summary li {
+      padding: 3px 0;
+      border-bottom: 1px dashed #eee;
+    }
+    
+    .export-import { 
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+    
+    .export-import button { 
+      background: #546e7a; 
+      color: #fff; 
+      border: none; 
+      border-radius: 3px; 
+      padding: 6px;
+      font-size: 13px;
+      cursor: pointer; 
+    }
+    
+    .export-import button:hover { 
+      background: #263238; 
+    }
+    
+    .delete-btn {
+      background: var(--danger);
+      color: white;
+      border: none;
+      border-radius: 2px;
+      padding: 3px 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    
+    /* RTL support for Arabic */
+    [dir="rtl"] {
+      direction: rtl;
+      text-align: right;
+    }
+    
+    [dir="rtl"] .compact-table th,
+    [dir="rtl"] .compact-table td {
+      text-align: right;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .container { padding: 8px; }
+      
+      .compact-form {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .compact-form button {
+        grid-column: span 2;
+      }
+      
+      .compact-controls {
+        grid-template-columns: 1fr;
+      }
+      
+      .compact-summary {
+        grid-template-columns: 1fr;
+      }
+      
+      .compact-table {
+        font-size: 12px;
+      }
+      
+      .compact-table th, 
+      .compact-table td {
+        padding: 4px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .compact-form {
+        grid-template-columns: 1fr;
+      }
+      
+      .compact-form button {
+        grid-column: span 1;
+      }
+      
+      .compact-table {
+        font-size: 11px;
+      }
+      
+      h1 {
+        font-size: 1.2em;
+      }
+    }
+    
+    /* Scrollable table container */
+    .table-container {
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+    }
+    
+    /* Balance highlight */
+    #currentBalance {
+      font-weight: bold;
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="lang-selector">
+    <button class="lang-btn active" data-lang="ru">RU</button>
+    <button class="lang-btn" data-lang="en">EN</button>
+    <button class="lang-btn" data-lang="ar">AR</button>
+  </div>
+  
+  <h1 data-i18n="title">Кассовая книга</h1>
+
+  <div class="compact-section">
+    <form id="entryForm" class="compact-form" autocomplete="off">
+      <select id="type">
+        <option value="income" data-i18n="income">Приход</option>
+        <option value="expense" data-i18n="expense">Расход</option>
+      </select>
+      <input type="date" id="date" required>
+      <input type="text" id="counterparty" data-i18n-ph="counterparty" placeholder="Контрагент" required>
+      <input type="number" id="amount" data-i18n-ph="amount" placeholder="Сумма" required step="0.01" min="0">
+      <input type="text" id="purpose" data-i18n-ph="purpose" placeholder="Цель платежа" required>
+      <input type="text" id="comment" data-i18n-ph="comment" placeholder="Комментарий">
+      <button type="submit" data-i18n="add">Добавить</button>
+    </form>
+  </div>
+
+  <div class="compact-section">
+    <div class="compact-controls">
+      <input type="text" id="search" data-i18n-ph="search" placeholder="Поиск по контрагенту">
+      <button onclick="sortByCounterparty()" data-i18n="sortByCounterparty">Сортировать</button>
+      <button class="clear-btn" onclick="clearAll()" data-i18n="clearAll">Очистить все</button>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table class="compact-table" id="dataTable">
+      <thead>
+        <tr>
+          <th onclick="sortBy('type')" data-i18n="type">Тип</th>
+          <th onclick="sortBy('date')" data-i18n="date">Дата</th>
+          <th onclick="sortBy('counterparty')" data-i18n="counterparty">Контрагент</th>
+          <th onclick="sortBy('amount')" data-i18n="amount">Сумма</th>
+          <th onclick="sortBy('purpose')" data-i18n="purpose">Цель</th>
+          <th data-i18n="action">Действие</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="emptyMsg" class="empty-msg" style="display:none;" data-i18n="noEntries">Нет записей</div>
+
+  <div class="compact-section compact-summary">
+    <div>
+      <h2 data-i18n="currentBalance">Текущий баланс: <span id="currentBalance">0.00</span></h2>
+    </div>
+    <div>
+      <h2 data-i18n="sumByCounterparty">Суммы по контрагентам</h2>
+      <ul id="sumByCounterparty"></ul>
+    </div>
+    <div>
+      <h2 data-i18n="balanceByDay">Баланс по дням</h2>
+      <ul id="balanceByDay"></ul>
+    </div>
+  </div>
+
+  <div class="compact-section">
+    <div class="export-import">
+      <button onclick="exportJSON()" data-i18n="exportJSON">Экспорт в JSON</button>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+      <button onclick="document.getElementById('importFile').click()" data-i18n="importJSON">Импорт из JSON</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Language support
+const translations = {
+  ru: {
+    title: "Кассовая книга",
+    income: "Приход",
+    expense: "Расход",
+    counterparty: "Контрагент",
+    amount: "Сумма",
+    purpose: "Цель платежа",
+    comment: "Комментарий",
+    add: "Добавить",
+    search: "Поиск по контрагенту",
+    sortByCounterparty: "Сортировать",
+    clearAll: "Очистить все",
+    type: "Тип",
+    date: "Дата",
+    action: "Действие",
+    noEntries: "Нет записей",
+    currentBalance: "Текущий баланс:",
+    sumByCounterparty: "Суммы по контрагентам",
+    balanceByDay: "Баланс по дням",
+    exportJSON: "Экспорт в JSON",
+    importJSON: "Импорт из JSON",
+    confirmDelete: "Удалить запись?",
+    confirmClear: "Удалить все записи? Это действие необратимо!",
+    importSuccess: "Импортировано!",
+    fillRequired: "Заполните все обязательные поля!"
+  },
+  en: {
+    title: "Cash Book",
+    income: "Income",
+    expense: "Expense",
+    counterparty: "Counterparty",
+    amount: "Amount",
+    purpose: "Payment purpose",
+    comment: "Comment",
+    add: "Add",
+    search: "Search by counterparty",
+    sortByCounterparty: "Sort",
+    clearAll: "Clear all",
+    type: "Type",
+    date: "Date",
+    action: "Action",
+    noEntries: "No entries",
+    currentBalance: "Current balance:",
+    sumByCounterparty: "Amounts by counterparty",
+    balanceByDay: "Balance by day",
+    exportJSON: "Export to JSON",
+    importJSON: "Import from JSON",
+    confirmDelete: "Delete entry?",
+    confirmClear: "Delete all entries? This action is irreversible!",
+    importSuccess: "Imported!",
+    fillRequired: "Please fill all required fields!"
+  },
+  ar: {
+    title: "دفتر النقدية",
+    income: "دخل",
+    expense: "مصروف",
+    counterparty: "الطرف المقابل",
+    amount: "المبلغ",
+    purpose: "الغرض من الدفع",
+    comment: "تعليق",
+    add: "إضافة",
+    search: "البحث حسب الطرف المقابل",
+    sortByCounterparty: "ترتيب",
+    clearAll: "مسح الكل",
+    type: "النوع",
+    date: "التاريخ",
+    action: "الإجراء",
+    noEntries: "لا توجد مدخلات",
+    currentBalance: "الرصيد الحالي:",
+    sumByCounterparty: "المبالح حسب الطرف المقابل",
+    balanceByDay: "الرصيد حسب اليوم",
+    exportJSON: "تصدير إلى JSON",
+    importJSON: "استيراد من JSON",
+    confirmDelete: "حذف المدخل؟",
+    confirmClear: "حذف جميع المدخلات؟ هذا الإجراء لا يمكن التراجع عنه!",
+    importSuccess: "تم الاستيراد!",
+    fillRequired: "يرجى ملء جميع الحقول المطلوبة!"
+  }
+};
+
+let currentLang = 'ru';
+let entries = [];
+let sortState = { key: null, asc: true };
+
+// Language functions
+function changeLanguage(lang) {
+  currentLang = lang;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (translations[lang][key]) {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.placeholder = translations[lang][key];
+      } else {
+        el.textContent = translations[lang][key];
+      }
+    }
+  });
+  
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+    const key = el.getAttribute('data-i18n-ph');
+    if (translations[lang][key]) {
+      el.placeholder = translations[lang][key];
+    }
+  });
+  
+  // Set RTL for Arabic
+  document.body.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+  
+  // Update language buttons
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+  });
+  
+  // Re-render table with new language
+  render();
+}
+
+// Event listeners for language buttons
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    changeLanguage(btn.getAttribute('data-lang'));
+  });
+});
+
+// Core application functions
+function save() { localStorage.cashbook = JSON.stringify(entries); }
+function load() { entries = JSON.parse(localStorage.cashbook || "[]"); }
+
+function addEntry(entry) {
+  entries.push(entry);
+  save();
+  render();
+}
+
+function deleteEntry(idx) {
+  if (confirm(translations[currentLang].confirmDelete)) {
+    entries.splice(idx, 1);
+    save();
+    render();
+  }
+}
+
+function clearAll() {
+  if (entries.length === 0) return;
+  if (confirm(translations[currentLang].confirmClear)) {
+    entries = [];
+    save();
+    render();
+  }
+}
+
+function render() {
+  const tbody = document.querySelector("#dataTable tbody");
+  tbody.innerHTML = "";
+  const search = document.getElementById("search").value.trim().toLowerCase();
+  let filtered = entries.filter(e => e.counterparty.toLowerCase().includes(search));
+  
+  if (filtered.length === 0) {
+    document.getElementById("emptyMsg").style.display = "block";
+  } else {
+    document.getElementById("emptyMsg").style.display = "none";
+  }
+  
+  filtered.forEach((e, i) => {
+    const tr = document.createElement("tr");
+    tr.className = e.type === "income" ? "income-row" : "expense-row";
+    tr.innerHTML = `
+      <td>${e.type === "income" ? translations[currentLang].income : translations[currentLang].expense}</td>
+      <td>${e.date}</td>
+      <td>${e.counterparty}</td>
+      <td>${e.amount.toFixed(2)}</td>
+      <td>${e.purpose}</td>
+      <td><button class="delete-btn" onclick="deleteEntry(${getEntryIndex(filtered, e)})">✖</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Calculate and display summary data
+  updateSummary();
+}
+
+function getEntryIndex(filtered, entry) {
+  return entries.findIndex(e =>
+    e.type === entry.type &&
+    e.date === entry.date &&
+    e.counterparty === entry.counterparty &&
+    e.amount === entry.amount &&
+    e.purpose === entry.purpose &&
+    e.comment === entry.comment
+  );
+}
+
+function updateSummary() {
+  // Sums by counterparty
+  const sums = {};
+  entries.forEach(e => {
+    const sign = e.type === "income" ? 1 : -1;
+    sums[e.counterparty] = (sums[e.counterparty] || 0) + sign * e.amount;
+  });
+  
+  const sumList = document.getElementById("sumByCounterparty");
+  sumList.innerHTML = "";
+  Object.entries(sums)
+    .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))
+    .forEach(([name, sum]) => {
+      const li = document.createElement("li");
+      li.textContent = `${name}: ${sum.toFixed(2)}`;
+      sumList.appendChild(li);
+    });
+
+  // Balance by day
+  const byDay = {};
+  entries.forEach(e => {
+    const sign = e.type === "income" ? 1 : -1;
+    byDay[e.date] = (byDay[e.date] || 0) + sign * e.amount;
+  });
+  
+  // Accumulated balance
+  let days = Object.keys(byDay).sort();
+  let acc = 0;
+  const balList = document.getElementById("balanceByDay");
+  balList.innerHTML = "";
+  days.forEach(date => {
+    acc += byDay[date];
+    const li = document.createElement("li");
+    li.textContent = `${date}: ${acc.toFixed(2)}`;
+    balList.appendChild(li);
+  });
+
+  // Current balance
+  let total = 0;
+  entries.forEach(e => total += (e.type === "income" ? 1 : -1) * e.amount);
+  document.getElementById("currentBalance").textContent = total.toFixed(2);
+}
+
+// Event handlers
+document.getElementById("entryForm").onsubmit = function(e) {
+  e.preventDefault();
+  const entry = {
+    type: document.getElementById("type").value,
+    date: document.getElementById("date").value,
+    counterparty: document.getElementById("counterparty").value,
+    amount: parseFloat(document.getElementById("amount").value || "0"),
+    purpose: document.getElementById("purpose").value,
+    comment: document.getElementById("comment").value
+  };
+  
+  if (!entry.date || !entry.counterparty || !entry.amount || !entry.purpose)
+    return alert(translations[currentLang].fillRequired);
+  
+  addEntry(entry);
+  this.reset();
+  setToday();
+};
+
+document.getElementById("search").oninput = render;
+
+function sortByCounterparty() {
+  entries.sort((a, b) => a.counterparty.localeCompare(b.counterparty));
+  save();
+  render();
+}
+
+function sortBy(key) {
+  if (sortState.key === key) sortState.asc = !sortState.asc;
+  else sortState = { key, asc: true };
+  
+  entries.sort((a, b) => {
+    if (key === "amount") {
+      return sortState.asc ? a.amount - b.amount : b.amount - a.amount;
+    } else if (key === "date") {
+      return sortState.asc ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date);
+    } else {
+      return sortState.asc
+        ? (a[key] || "").localeCompare(b[key] || "")
+        : (b[key] || "").localeCompare(a[key] || "");
+    }
+  });
+  
+  save();
+  render();
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(entries, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "cashbook.json";
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),500);
+}
+
+function importJSON(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!Array.isArray(imported)) throw new Error("Invalid format");
+      
+      entries = imported;
+      save();
+      render();
+      alert(translations[currentLang].importSuccess);
+    } catch(err) {
+      alert("Import error: " + err);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = ''; // Reset file input
+}
+
+function setToday() {
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById("date").value = today;
+}
+
+// Initialize application
+load();
+setToday();
+render();
+</script>
+</body>
+</html>

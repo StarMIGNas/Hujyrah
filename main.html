@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nasser IT Solutions | Практичные бизнес-приложения</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --text: #2c3e50;
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg-gradient);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* Header & Navigation */
+        header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            color: var(--secondary);
+        }
+
+        .language-switcher {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .lang-btn {
+            padding: 0.5rem 1rem;
+            border: 2px solid var(--light);
+            background: white;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .lang-btn.active {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--primary);
+        }
+
+        /* Hero Section */
+        .hero {
+            padding: 120px 2rem 60px;
+            text-align: center;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        /* About Section */
+        .about {
+            background: white;
+            padding: 80px 2rem;
+            border-radius: 30px;
+            margin: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .about h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: var(--primary);
+        }
+
+        .about-text {
+            font-size: 1.2rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            color: var(--text);
+        }
+
+        /* Programs Section */
+        .programs {
+            padding: 80px 2rem;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .programs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .program-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .program-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .program-icon {
+            font-size: 3rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        .program-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .program-card p {
+            color: var(--text);
+            margin-bottom: 1.5rem;
+        }
+
+        .program-langs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .lang-badge {
+            padding: 0.3rem 0.8rem;
+            background: var(--light);
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .download-btn {
+            background: var(--success);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            font-weight: 500;
+        }
+
+        /* Contact Section */
+        .contact {
+            background: white;
+            padding: 80px 2rem;
+            border-radius: 30px;
+            margin: 40px;
+            text-align: center;
+        }
+
+        .contact h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: var(--primary);
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .contact-item {
+            padding: 2rem;
+            background: var(--light);
+            border-radius: 15px;
+        }
+
+        .contact-item i {
+            font-size: 2rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: var(--primary);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .social-links a {
+            color: white;
+            font-size: 1.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .social-links a:hover {
+            color: var(--secondary);
+        }
+
+        .donate-section {
+            margin: 2rem 0;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+        }
+
+        .donate-options {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .donate-option {
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            text-align: left;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+                flex-direction: column;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: white;
+                padding: 1rem;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .mobile-menu-btn {
+                display: block;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero p {
+                font-size: 1.1rem;
+            }
+
+            .about, .contact {
+                margin: 20px;
+                padding: 40px 1rem;
+            }
+
+            .programs-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .donate-options {
+                flex-direction: column;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-container {
+                padding: 1rem;
+            }
+
+            .hero {
+                padding: 100px 1rem 40px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .btn {
+                padding: 0.8rem 1.5rem;
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+
+        /* RTL support for Arabic */
+        [dir="rtl"] {
+            text-align: right;
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+        }
+
+        [dir="rtl"] .program-card,
+        [dir="rtl"] .contact-item {
+            text-align: right;
+        }
+
+        [dir="rtl"] .nav-links {
+            flex-direction: row-reverse;
+        }
+
+        [dir="rtl"] .cta-buttons,
+        [dir="rtl"] .social-links {
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="nav-container">
+            <a href="#" class="logo">Nasser<span>IT</span></a>
+            
+            <div class="nav-links">
+                <a href="#about" data-translate="nav_about">Обо мне</a>
+                <a href="#programs" data-translate="nav_programs">Программы</a>
+                <a href="#contact" data-translate="nav_contact">Контакты</a>
+                <div class="language-switcher">
+                    <button class="lang-btn active" data-lang="ru">RU</button>
+                    <button class="lang-btn" data-lang="en">EN</button>
+                    <button class="lang-btn" data-lang="ar">AR</button>
+                </div>
+            </div>
+
+            <button class="mobile-menu-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 data-translate="hero_title">Практичные IT-решения для бизнеса</h1>
+            <p data-translate="hero_subtitle">Программы для торговли, учёта и обучения с поддержкой 3 языков</p>
+            <div class="cta-buttons">
+                <a href="#programs" class="btn btn-primary" data-translate="btn_programs">Смотреть программы</a>
+                <a href="#contact" class="btn btn-secondary" data-translate="btn_contact">Связаться со мной</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="about-content">
+            <h2 data-translate="about_title">Привет! Меня зовут Нассер</h2>
+            <div class="about-text">
+                <p data-translate="about_text_1">Я создаю практичные программы для бизнеса, которые решают реальные задачи. Все мои приложения поддерживают русский, английский и арабский языки.</p>
+                <p data-translate="about_text_2">Мой опыт в торговле и логистике помогает мне понимать, какие инструменты действительно нужны предпринимателям. Я создаю программы, которые работают быстро, просто и эффективно.</p>
+                <p data-translate="about_text_3">Если вам понравились мои инструменты — буду рад поддержке. Эти средства помогут развивать проекты и создавать новые полезные программы.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Programs Section -->
+    <section id="programs" class="programs">
+        <div class="container">
+            <h2 class="section-title" data-translate="programs_title">Мои программы</h2>
+            <div class="programs-grid">
+                <!-- Программа 1 -->
+                <div class="program-card animate">
+                    <div class="program-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3>RusEng Calc</h3>
+                    <div class="program-langs">
+                        <span class="lang-badge">RU</span>
+                        <span class="lang-badge">EN</span>
+                    </div>
+                    <p>Калькулятор, который выводит результаты английскими и русскими буквами</p>
+                    <a href="En Ru calc.html" class="download-btn" data-translate="btn_download">Скачать</a>
+                </div>
+
+                <!-- Программа 2 -->
+                <div class="program-card animate">
+                    <div class="program-icon">
+                        <i class="fas fa-cash-register"></i>
+                    </div>
+                    <h3>Касса-Лайт</h3>
+                    <div class="program-langs">
+                        <span class="lang-badge">RU</span>
+                        <span class="lang-badge">EN</span>
+                        <span class="lang-badge">AR</span>
+                    </div>
+                    <p>Простая касса для очень маленьких торговых точек</p>
+                    <a href="mini cash reg RU.html" class="download-btn" data-translate="btn_download">Скачать Ru</a>
+                    <a href="mini Cash reg En.html" class="download-btn" data-translate="btn_download">Скачать En</a>
+                    <a href="mine cash reg Ar.html" class="download-btn" data-translate="btn_download">Скачать Ar</a>
+                </div>
+
+                <!-- Программа 3 -->
+                <div class="program-card animate">
+                    <div class="program-icon">
+                        <i class="fas fa-store"></i>
+                    </div>
+                    <h3>Касса для магазинов</h3>
+                    <div class="program-langs">
+                        <span class="lang-badge">RU</span>
+                        <span class="lang-badge">EN</span>
+                        <span class="lang-badge">AR</span>
+                    </div>
+                    <p>Полнофункциональная касса для маленьких магазинов</p>
+                    <a href="Cash reg 2 Ar.html" class="download-btn" data-translate="btn_download">Скачать Ar</a>
+                    <a href="Cash reg 2 Ru.html" class="download-btn" data-translate="btn_download">Скачать Ru</a>
+                    <a href="Cash reg2 En.html" class="download-btn" data-translate="btn_download">Скачать En</a>
+                </div>
+
+                <!-- Программа 4 -->
+                <div class="program-card animate">
+                    <div class="program-icon">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                    <h3>Кассовый приход/расход</h3>
+                    <div class="program-langs">
+                        <span class="lang-badge">RU</span>
+                        <span class="lang-badge">EN</span>
+                        <span class="lang-badge">AR</span>
+                    </div>
+                    <p>Учёт прихода и расхода денежных средств</p>
+                    <a href="cash book mult lang.html" class="download-btn" data-translate="btn_download">Скачать</a>
+                </div>
+
+                <!-- Программа 5 -->
+                <div class="program-card animate">
+                    <div class="program-icon">
+                        <i class="fas fa-warehouse"></i>
+                    </div>
+                    <h3>Mini ERP</h3>
+                    <div class="program-langs">
+                        <span class="lang-badge">RU</span>
+                        <span class="lang-badge">EN</span>
+                        <span class="lang-badge">AR</span>
+                    </div>
+                    <p>Касса и склад с учётом остатков товаров</p>
+                    <a href="Mini ERP mult lang.html" class="download-btn" data-translate="btn_download">Скачать</a>
+                </div>
+
+                <!-- Программа 6 -->
+                <div class="program-card animate">
+                    <div class="program-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Регистр расходов</h3>
+                    <div class="program-langs">
+                        <span class="lang-badge">RU</span>
+                        <span class="lang-badge">EN</span>
+                        <span class="lang-badge">AR</span>
+                    </div>
+                    <p>Ежедневный учёт расходов и финансовый контроль</p>
+                    <a href="expense tracker mult lang.html" class="download-btn" data-translate="btn_download">Скачать</a>
+                </div>
+
+                <!-- Программа 7 -->
+                <div class="program-card animate">
+                    <div class="program-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3>SmartQuiz</h3>
+                    <div class="program-langs">
+                        <span class="lang-badge">RU</span>
+                        <span class="lang-badge">EN</span>
+                        <span class="lang-badge">AR</span>
+                    </div>
+                    <p>Образовательные викторины для обучения и тестирования</p>
+                    <a href="SmartQuiz.html" class="download-btn" data-translate="btn_download">Скачать</a>
+                </div>
+
+                <!-- Программа 8 -->
+                <div class="program-card animate">
+                    <div class="program-icon">
+                        <i class="fas fa-mosque"></i>
+                    </div>
+                    <h3>Мусульманская викторина</h3>
+                    <div class="program-langs">
+                        <span class="lang-badge">RU</span>
+                        <span class="lang-badge">EN</span>
+                        <span class="lang-badge">AR</span>
+                    </div>
+                    <p>Викторина на исламскую тематику для проверки знаний</p>
+                    <a href="Quiz Islam.html" class="download-btn" data-translate="btn_download">Скачать</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 data-translate="contact_title">Свяжитесь со мной</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <h3 data-translate="email">Email</h3>
+                    <p>hujyrah@gmail.com</p>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <h3 data-translate="phone">Телефон</h3>
+                    <p>8 918 034 60 22</p>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-comments"></i>
+                    <h3>Мессенджеры</h3>
+                    <p>Telegram, WhatsApp</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <p>© 2024 Nasser IT Solutions. <span data-translate="rights">Все права защищены.</span></p>
+            
+            <div class="social-links">
+                <a href="https://t.me/mignas16"><i class="fab fa-telegram"></i></a>
+                <a href="https://wa.me/79180346022"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://github.com/StarMIGNas"><i class="fab fa-github"></i></a>
+            </div>
+            
+            <div class="donate-section">
+                <h3 data-translate="donate_title">Поддержите проект</h3>
+                <div class="donate-options">
+                    <div class="donate-option">
+                        <strong>СберБанк:</strong> 8 918 034 60 22
+                    </div>
+                    <div class="donate-option">
+                        <strong>USDC ERC-20:</strong> 0x8314041BB6DEFCD340E9c59A88AB8A0C2912C2c5
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Полные переводы
+        const translations = {
+            ru: {
+                hero_title: "Практичные IT-решения для бизнеса",
+                hero_subtitle: "Программы для торговли, учёта и обучения с поддержкой 3 языков",
+                btn_programs: "Смотреть программы",
+                btn_contact: "Связаться со мной",
+                about_title: "Привет! Меня зовут Нассер",
+                about_text_1: "Я создаю практичные программы для бизнеса, которые решают реальные задачи. Все мои приложения поддерживают русский, английский и арабский языки.",
+                about_text_2: "Мой опыт в торговле и логистике помогает мне понимать, какие инструменты действительно нужны предпринимателям. Я создаю программы, которые работают быстро, просто и эффективно.",
+                about_text_3: "Если вам понравились мои инструменты — буду рад поддержке. Эти средства помогут развивать проекты и создавать новые полезные программы.",
+                programs_title: "Мои программы",
+                contact_title: "Свяжитесь со мной",
+                email: "Email",
+                phone: "Телефон",
+                rights: "Все права защищены.",
+                donate_title: "Поддержите проект",
+                nav_about: "Обо мне",
+                nav_programs: "Программы",
+                nav_contact: "Контакты",
+                btn_download: "Скачать"
+            },
+            en: {
+                hero_title: "Practical IT Solutions for Business",
+                hero_subtitle: "Programs for trade, accounting and learning with 3 language support",
+                btn_programs: "View Programs",
+                btn_contact: "Contact Me",
+                about_title: "Hi! I'm Nasser",
+                about_text_1: "I create practical business programs that solve real problems. All my applications support Russian, English and Arabic languages.",
+                about_text_2: "My experience in trade and logistics helps me understand what tools entrepreneurs really need. I create programs that work fast, simple and efficient.",
+                about_text_3: "If you like my tools - I would appreciate your support. These funds will help develop projects and create new useful programs.",
+                programs_title: "My Programs",
+                contact_title: "Get in Touch",
+                email: "Email",
+                phone: "Phone",
+                rights: "All rights reserved.",
+                donate_title: "Support the Project",
+                nav_about: "About Me",
+                nav_programs: "Programs",
+                nav_contact: "Contact",
+                btn_download: "Download"
+            },
+            ar: {
+                hero_title: "حلول تقنية عملية للأعمال",
+                hero_subtitle: "برامج للتجارة والمحاسبة والتعليم مع دعم 3 لغات",
+                btn_programs: "عرض البرامج",
+                btn_contact: "اتصل بي",
+                about_title: "مرحبًا! أنا ناصر",
+                about_text_1: "أصمم برامج عملية للأعمال تحل مشاكل حقيقية. جميع تطبيقاتي تدعم اللغات الروسية والإنجليزية والعربية.",
+                about_text_2: "خبرتي في التجارة واللوجستيات تساعدني على فهم الأدوات التي يحتاجها رواد الأعمال حقًا. أصنع برامج تعمل بسرعة وبساطة وكفاءة.",
+                about_text_3: "إذا أعجبتك أدواتي - سأكون ممتناً لدعمك. هذه الأموال ستساعد في تطوير المشاريع وإنشاء برامج مفيدة جديدة.",
+                programs_title: "برامجي",
+                contact_title: "ابق على تواصل",
+                email: "البريد الإلكتروني",
+                phone: "الهاتف",
+                rights: "جميع الحقوق محفوظة.",
+                donate_title: "ادعم المشروع",
+                nav_about: "عني",
+                nav_programs: "البرامج",
+                nav_contact: "اتصل",
+                btn_download: "تحميل"
+            }
+        };
+
+        // Переключение языка
+        const langButtons = document.querySelectorAll('.lang-btn');
+        langButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const lang = btn.dataset.lang;
+                
+                // Обновляем активную кнопку
+                langButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Направление текста
+                document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+                document.documentElement.lang = lang;
+                
+                // Обновляем текст
+                updateContent(lang);
+            });
+        });
+
+        function updateContent(lang) {
+            const t = translations[lang];
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (t[key]) {
+                    el.innerHTML = t[key];
+                }
+            });
+        }
+
+        // Открытие мобильного меню
+        const menuBtn = document.querySelector('.mobile-menu-btn');
+        const navLinks = document.querySelector('.nav-links');
+        menuBtn.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+        });
+
+        // Анимация при прокрутке
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.program-card').forEach(card => {
+            observer.observe(card);
+        });
+
+        // Инициализация языка
+        updateContent('ru');
+    </script>
+</body>
+</html>

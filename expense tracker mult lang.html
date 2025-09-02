@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi-Language Expense Tracker</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    :root {
+      --primary-color: #4f46e5;
+      --primary-hover: #4338ca;
+      --danger-color: #e11d48;
+      --danger-hover: #be123c;
+      --background: #f5f7fa;
+      --card-bg: #fff;
+      --text-color: #333;
+      --border-color: #ccc;
+      --shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0; 
+      padding: 0;
+      background: var(--background);
+      color: var(--text-color);
+      transition: all 0.3s ease;
+    }
+    
+    body.rtl {
+      direction: rtl;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    header {
+      background: var(--primary-color);
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .language-selector {
+      background: rgba(255, 255, 255, 0.2);
+      border: none;
+      color: white;
+      padding: 0.4rem;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .language-selector option {
+      color: #333;
+    }
+    
+    main {
+      max-width: 700px;
+      margin: 1rem auto;
+      padding: 1rem;
+    }
+    
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--shadow);
+    }
+    
+    label { 
+      display: block; 
+      margin: .5rem 0 .2rem; 
+    }
+    
+    input, select, textarea, button {
+      width: 100%;
+      padding: .6rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    
+    button {
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      margin-top: .5rem;
+      transition: background 0.3s;
+    }
+    
+    button:hover { 
+      background: var(--primary-hover); 
+    }
+    
+    .small-btn {
+      width: auto;
+      font-size: .85rem;
+      padding: .4rem .7rem;
+      background: var(--danger-color);
+    }
+    
+    .small-btn:hover {
+      background: var(--danger-hover);
+    }
+    
+    .expense {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: .5rem 0;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .expense:last-child { 
+      border-bottom: none; 
+    }
+    
+    .expense-info {
+      flex: 1;
+      margin-right: 1rem;
+    }
+    
+    .rtl .expense-info {
+      margin-right: 0;
+      margin-left: 1rem;
+    }
+    
+    .expense-actions button {
+      margin-left: .5rem;
+      padding: .3rem .6rem;
+      font-size: .9rem;
+    }
+    
+    .rtl .expense-actions button {
+      margin-left: 0;
+      margin-right: .5rem;
+    }
+    
+    .group-block {
+      margin-bottom: 1rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: .6rem;
+      background: #fafafa;
+    }
+    
+    .group-title {
+      font-weight: bold;
+      margin-bottom: .5rem;
+    }
+    
+    .group-total {
+      text-align: right;
+      font-weight: bold;
+      margin-top: .5rem;
+    }
+    
+    .rtl .group-total {
+      text-align: left;
+    }
+    
+    .total {
+      font-weight: bold;
+      text-align: right;
+      margin-top: .5rem;
+      font-size: 1.1rem;
+    }
+    
+    .rtl .total {
+      text-align: left;
+    }
+    
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span id="app-title">📒 Ежедневные расходы</span>
+    <select id="language" class="language-selector">
+      <option value="ru">Русский</option>
+      <option value="en">English</option>
+      <option value="ar">العربية</option>
+    </select>
+  </header>
+  
+  <main>
+    <div class="card">
+      <label for="date" id="date-label">Дата</label>
+      <input type="date" id="date">
+
+      <label for="group" id="category-label">Категория</label>
+      <select id="group"></select>
+      <button onclick="addGroup()" id="add-category-btn">➕ Добавить категорию</button>
+      <button class="small-btn" onclick="deleteGroup()" id="delete-category-btn">❌ Удалить категорию</button>
+
+      <label for="amount" id="amount-label">Сумма</label>
+      <input type="number" id="amount" placeholder="Введите сумму">
+
+      <label for="note" id="note-label">Заметка</label>
+      <textarea id="note" rows="2" placeholder="Необязательно"></textarea>
+
+      <button onclick="addExpense()" id="add-expense-btn">Добавить расход</button>
+    </div>
+    
+    <div class="card">
+      <h3 id="records-title">Записи</h3>
+      <div id="list"></div>
+      <div class="total" id="total"></div>
+    </div>
+  </main>
+
+  <script>
+    // Тексты для разных языков
+    const translations = {
+      ru: {
+        appTitle: "📒 Ежедневные расходы",
+        date: "Дата",
+        category: "Категория",
+        addCategory: "➕ Добавить категорию",
+        deleteCategory: "❌ Удалить категорию",
+        amount: "Сумма",
+        amountPlaceholder: "Введите сумму",
+        note: "Заметка",
+        notePlaceholder: "Необязательно",
+        addExpense: "Добавить расход",
+        records: "Записи",
+        groupTotal: "Итого по группе:",
+        dayTotal: "Итого за день:",
+        currency: "₽",
+        confirmDeleteCategory: "Удалить категорию \"{category}\"? Все расходы в ней останутся.",
+        categoryExists: "Такая категория уже существует!",
+        categoryPrompt: "Введите название новой категории:",
+        noCategoryAlert: "Сначала создайте категорию!",
+        noAmountAlert: "Введите сумму!",
+        noCategorySelected: "Нет выбранной категории!"
+      },
+      en: {
+        appTitle: "📒 Daily Expenses",
+        date: "Date",
+        category: "Category",
+        addCategory: "➕ Add Category",
+        deleteCategory: "❌ Delete Category",
+        amount: "Amount",
+        amountPlaceholder: "Enter amount",
+        note: "Note",
+        notePlaceholder: "Optional",
+        addExpense: "Add Expense",
+        records: "Records",
+        groupTotal: "Group total:",
+        dayTotal: "Day total:",
+        currency: "€",
+        confirmDeleteCategory: "Delete category \"{category}\"? All expenses in it will remain.",
+        categoryExists: "This category already exists!",
+        categoryPrompt: "Enter new category name:",
+        noCategoryAlert: "Please create a category first!",
+        noAmountAlert: "Please enter amount!",
+        noCategorySelected: "No category selected!"
+      },
+      ar: {
+        appTitle: "📒 المصروفات اليومية",
+        date: "التاريخ",
+        category: "الفئة",
+        addCategory: "➕ إضافة فئة",
+        deleteCategory: "❌ حذف الفئة",
+        amount: "المبلغ",
+        amountPlaceholder: "أدخل المبلغ",
+        note: "ملاحظة",
+        notePlaceholder: "اختياري",
+        addExpense: "إضافة مصروف",
+        records: "السجلات",
+        groupTotal: "المجموع حسب الفئة:",
+        dayTotal: "المجموع اليوم:",
+        currency: "دينار",
+        confirmDeleteCategory: "حذف الفئة \"{category}\"? جميع المصروفات فيها ستبقى.",
+        categoryExists: "هذه الفئة موجودة بالفعل!",
+        categoryPrompt: "أدخل اسم الفئة الجديدة:",
+        noCategoryAlert: "الرجاء إنشاء فئة أولاً!",
+        noAmountAlert: "الرجاء إدخال المبلغ!",
+        noCategorySelected: "لم يتم اختيار فئة!"
+      }
+    };
+
+    const dateInput = document.getElementById('date');
+    const groupSelect = document.getElementById('group');
+    const languageSelector = document.getElementById('language');
+    let currentLanguage = 'ru';
+    
+    // Установка текущей даты по умолчанию
+    dateInput.valueAsDate = new Date();
+
+    // Инициализация приложения
+    function initApp() {
+      loadLanguage();
+      loadGroups();
+      loadExpenses();
+      
+      // Обработчики событий
+      dateInput.addEventListener('change', loadExpenses);
+      languageSelector.addEventListener('change', changeLanguage);
+    }
+
+    // Загрузка и применение языка
+    function loadLanguage() {
+      currentLanguage = localStorage.getItem('expenseTrackerLanguage') || 'ru';
+      languageSelector.value = currentLanguage;
+      applyLanguage();
+    }
+
+    function changeLanguage() {
+      currentLanguage = languageSelector.value;
+      localStorage.setItem('expenseTrackerLanguage', currentLanguage);
+      applyLanguage();
+      loadGroups();
+      loadExpenses();
+    }
+
+    function applyLanguage() {
+      const t = translations[currentLanguage];
+      
+      // Применяем тексты ко всем элементам
+      document.getElementById('app-title').textContent = t.appTitle;
+      document.getElementById('date-label').textContent = t.date;
+      document.getElementById('category-label').textContent = t.category;
+      document.getElementById('add-category-btn').textContent = t.addCategory;
+      document.getElementById('delete-category-btn').textContent = t.deleteCategory;
+      document.getElementById('amount-label').textContent = t.amount;
+      document.getElementById('amount').placeholder = t.amountPlaceholder;
+      document.getElementById('note-label').textContent = t.note;
+      document.getElementById('note').placeholder = t.notePlaceholder;
+      document.getElementById('add-expense-btn').textContent = t.addExpense;
+      document.getElementById('records-title').textContent = t.records;
+      
+      // Устанавливаем направление текста для арабского
+      if (currentLanguage === 'ar') {
+        document.body.classList.add('rtl');
+      } else {
+        document.body.classList.remove('rtl');
+      }
+    }
+
+    // ---- Работа с группами ----
+    function loadGroups() {
+      let groups = JSON.parse(localStorage.getItem('groups')) || [];
+      groupSelect.innerHTML = '';
+      groups.forEach(g => {
+        if (typeof g === "string") {
+          let opt = document.createElement('option');
+          opt.value = g;
+          opt.textContent = g;
+          groupSelect.appendChild(opt);
+        }
+      });
+    }
+
+    function addGroup() {
+      const t = translations[currentLanguage];
+      let name = prompt(t.categoryPrompt);
+      if (!name) return;
+      name = name.trim();
+      if (!name) return;
+      let groups = JSON.parse(localStorage.getItem('groups')) || [];
+      if (!groups.includes(name)) {
+        groups.push(name);
+        localStorage.setItem('groups', JSON.stringify(groups));
+        loadGroups();
+      } else {
+        alert(t.categoryExists);
+      }
+    }
+
+    function deleteGroup() {
+      const t = translations[currentLanguage];
+      let current = groupSelect.value;
+      if (!current) return alert(t.noCategorySelected);
+      
+      if (!confirm(t.confirmDeleteCategory.replace("{category}", current))) return;
+      
+      let groups = JSON.parse(localStorage.getItem('groups')) || [];
+      groups = groups.filter(g => g !== current);
+      localStorage.setItem('groups', JSON.stringify(groups));
+      loadGroups();
+    }
+
+    // ---- Работа с расходами ----
+    function getKey() {
+      return 'expenses_' + dateInput.value;
+    }
+
+    function loadExpenses() {
+      const list = document.getElementById('list');
+      list.innerHTML = '';
+      let expenses = JSON.parse(localStorage.getItem(getKey())) || [];
+      const t = translations[currentLanguage];
+
+      // Группировка
+      let grouped = {};
+      expenses.forEach((e, i) => {
+        if (!grouped[e.group]) grouped[e.group] = [];
+        grouped[e.group].push({ ...e, index: i });
+      });
+
+      let dayTotal = 0;
+      for (let g in grouped) {
+        let block = document.createElement('div');
+        block.className = 'group-block';
+        let groupTotal = 0;
+
+        let title = document.createElement('div');
+        title.className = 'group-title';
+        title.textContent = g;
+        block.appendChild(title);
+
+        grouped[g].forEach(exp => {
+          groupTotal += Number(exp.amount);
+          let div = document.createElement('div');
+          div.className = 'expense';
+          div.innerHTML = `
+            <div class="expense-info">
+              ${exp.amount} ${t.currency} — <small>${exp.note || ''}</small>
+            </div>
+            <div class="expense-actions">
+              <button onclick="editExpense(${exp.index})">✏️</button>
+              <button onclick="deleteExpense(${exp.index})">🗑️</button>
+            </div>
+          `;
+          block.appendChild(div);
+        });
+
+        let totalDiv = document.createElement('div');
+        totalDiv.className = 'group-total';
+        totalDiv.textContent = t.groupTotal + " " + groupTotal + " " + t.currency;
+        block.appendChild(totalDiv);
+
+        list.appendChild(block);
+        dayTotal += groupTotal;
+      }
+
+      document.getElementById('total').textContent = t.dayTotal + " " + dayTotal + " " + t.currency;
+    }
+
+    function addExpense() {
+      const t = translations[currentLanguage];
+      let expenses = JSON.parse(localStorage.getItem(getKey())) || [];
+      if (!groupSelect.value) return alert(t.noCategoryAlert);
+      
+      const exp = {
+        group: groupSelect.value,
+        amount: document.getElementById('amount').value,
+        note: document.getElementById('note').value,
+        time: new Date().toLocaleTimeString()
+      };
+      
+      if (!exp.amount) return alert(t.noAmountAlert);
+      
+      expenses.push(exp);
+      localStorage.setItem(getKey(), JSON.stringify(expenses));
+      document.getElementById('amount').value = '';
+      document.getElementById('note').value = '';
+      loadExpenses();
+    }
+
+    function deleteExpense(index) {
+      let expenses = JSON.parse(localStorage.getItem(getKey())) || [];
+      expenses.splice(index, 1);
+      localStorage.setItem(getKey(), JSON.stringify(expenses));
+      loadExpenses();
+    }
+
+    function editExpense(index) {
+      let expenses = JSON.parse(localStorage.getItem(getKey())) || [];
+      let exp = expenses[index];
+      groupSelect.value = exp.group;
+      document.getElementById('amount').value = exp.amount;
+      document.getElementById('note').value = exp.note;
+      expenses.splice(index, 1);
+      localStorage.setItem(getKey(), JSON.stringify(expenses));
+      loadExpenses();
+    }
+
+    // Запуск приложения
+    initApp();
+  </script>
+</body>
+</html>

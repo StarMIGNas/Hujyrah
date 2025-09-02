@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Универсальная касса</title>
+  <style>
+    :root{
+      --primary:#e91e63; --accent:#2196F3; --ok:#4CAF50; --danger:#f44336; --muted:#666;
+      --bg:#f5f5f5; --card:#fff; --border:#e7e7e7;
+    }
+    *{box-sizing:border-box}
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);margin:0;padding:16px;color:#222}
+    h1{margin:4px 0 16px;color:var(--primary)}
+    .grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 2px 6px rgba(0,0,0,.06)}
+    .row{display:flex;gap:8px;align-items:center}
+    label{font-weight:600;margin-top:8px;display:block}
+    input, select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff}
+    input[type="number"]{appearance:textfield}
+    button{border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}
+    .btn{background:var(--accent);color:#fff}
+    .btn:hover{filter:brightness(.95)}
+    .btn-ok{background:var(--ok);color:#fff}
+    .btn-danger{background:var(--danger);color:#fff}
+    .btn-ghost{background:#fff;border:1px solid var(--border);color:#333}
+    .muted{color:var(--muted)}
+
+    .group{border:1px dashed var(--border);border-radius:10px;padding:10px;margin-bottom:12px}
+    .group>h3{margin:0 0 8px 0;color:#333}
+    .products{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}
+    .product{border:1px solid var(--border);border-radius:10px;padding:10px;background:#fff;display:flex;flex-direction:column;gap:6px}
+    .product .name{font-weight:700}
+    .product .price{color:var(--primary);font-weight:700}
+    .product .pill{font-size:12px;color:#555;background:#f1f1f1;border-radius:999px;padding:2px 8px;width:max-content}
+
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left}
+    th{background:#fafafa;position:sticky;top:0}
+    .right{text-align:right}
+    .total{display:flex;justify-content:flex-end;gap:12px;align-items:center;margin-top:10px;font-size:18px;font-weight:800}
+    .toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+
+    .history-item{border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;background:#fff}
+    .history-head{display:flex;justify-content:space-between;align-items:center}
+    .chips{display:flex;gap:6px;flex-wrap:wrap}
+    .chip{background:#f2f2f2;border-radius:999px;padding:2px 8px;font-size:12px}
+
+    @media (max-width:480px){
+      .products{grid-template-columns:repeat(2,1fr)}
+    }
+  </style>
+</head>
+<body>
+  <h1>Универсальная касса</h1>
+
+  <div class="grid">
+    <!-- Блок: добавить группу -->
+    <div class="card">
+      <h2>Добавить группу</h2>
+      <label for="groupName">Название группы</label>
+      <div class="row">
+        <input id="groupName" placeholder="Например: Мороженое" />
+        <button class="btn" onclick="addGroup()">Добавить</button>
+      </div>
+      <p class="muted" style="margin:8px 0 0">Совет: группируйте по отделам, чтобы быстрее искать товар.</p>
+    </div>
+
+    <!-- Блок: добавить товар -->
+    <div class="card">
+      <h2>Добавить товар</h2>
+      <label for="groupSelect">Группа</label>
+      <select id="groupSelect"></select>
+
+      <label for="productName">Название товара</label>
+      <input id="productName" placeholder="Например: Пломбир ванильный" />
+
+      <div class="row" style="gap:12px">
+        <div style="flex:1">
+          <label for="productPrice">Цена (за единицу / кг)</label>
+          <input id="productPrice" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00" />
+        </div>
+        <div style="width:210px">
+          <label for="productWeighted">Тип</label>
+          <select id="productWeighted">
+            <option value="false">Штучный (за 1 шт)</option>
+            <option value="true">Весовой (за 1 кг)</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn-ok" style="margin-top:8px" onclick="addProduct()">Добавить товар</button>
+      <p class="muted" style="margin:8px 0 0">Весовой товар будет продаваться по формуле: <b>количество × цена</b>, где количество — это вес (кг) с точностью до сотых.</p>
+    </div>
+  </div>
+
+  <!-- Товары -->
+  <div class="card">
+    <h2>Товары по группам</h2>
+    <div id="groupsContainer"></div>
+  </div>
+
+  <!-- Чек -->
+  <div class="card">
+    <h2>Текущий чек</h2>
+    <div style="max-height:320px;overflow:auto;border:1px solid var(--border);border-radius:10px">
+      <table>
+        <thead>
+          <tr>
+            <th>Товар</th>
+            <th class="right">Цена</th>
+            <th class="right">Кол-во</th>
+            <th class="right">Сумма</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="receiptBody"></tbody>
+      </table>
+    </div>
+    <div class="total">
+      <span>Итого:</span>
+      <span id="totalAmount">0.00 ₽</span>
+    </div>
+    <div class="toolbar">
+      <button class="btn-ok" onclick="saveReceipt()">Сохранить чек</button>
+      <button class="btn-ghost" onclick="promptDiscount()">Скидка на чек…</button>
+      <button class="btn-danger" onclick="clearReceipt()">Очистить чек</button>
+    </div>
+  </div>
+
+  <!-- История -->
+  <div class="card">
+    <h2>История чеков</h2>
+    <div id="historyContainer"></div>
+  </div>
+
+  <script>
+    // --- Модель данных ---
+    /**
+     * groups: [
+     *   { name: 'Мороженое', items: [ { name, price, weighted:boolean } ] }
+     * ]
+     */
+    let groups = JSON.parse(localStorage.getItem('groups_v2')) || [];
+    /** receipt: массив строк чека — всегда новая строка, без объединения */
+    let receipt = [];
+    /** история чеков */
+    let receiptsHistory = JSON.parse(localStorage.getItem('receiptsHistory_v2')) || [];
+
+    // --- Утилиты ---
+    const money = (v) => (Number(v)||0).toFixed(2);
+    const isPosNum = (v) => typeof v === 'number' && isFinite(v) && v > 0;
+
+    function persist(){
+      localStorage.setItem('groups_v2', JSON.stringify(groups));
+      localStorage.setItem('receiptsHistory_v2', JSON.stringify(receiptsHistory));
+    }
+
+    function ensureDefaultGroup(){
+      if(groups.length===0){
+        groups.push({ name:'Группа 1', items:[] });
+      }
+    }
+
+    // --- Рендеры ---
+    function renderGroupSelect(){
+      const sel = document.getElementById('groupSelect');
+      sel.innerHTML = '';
+      groups.forEach((g, i)=>{
+        const opt = document.createElement('option');
+        opt.value = String(i);
+        opt.textContent = g.name;
+        sel.appendChild(opt);
+      });
+    }
+
+    function renderGroups(){
+      const wrap = document.getElementById('groupsContainer');
+      wrap.innerHTML = '';
+      if(groups.length===0){
+        wrap.innerHTML = '<p class="muted">Пока нет групп. Добавьте первую группу выше.</p>';
+        return;
+      }
+      groups.forEach((g, gi)=>{
+        const box = document.createElement('div');
+        box.className = 'group';
+        const head = document.createElement('div');
+        head.className = 'row';
+        head.style.justifyContent = 'space-between';
+        head.innerHTML = `<h3>${escapeHtml(g.name)}</h3>`;
+
+        const actions = document.createElement('div');
+        actions.className = 'row';
+        const btnRename = document.createElement('button'); btnRename.className='btn-ghost'; btnRename.textContent='Переименовать'; btnRename.onclick=()=>renameGroup(gi);
+        const btnRemove = document.createElement('button'); btnRemove.className='btn-danger'; btnRemove.textContent='Удалить группу'; btnRemove.onclick=()=>removeGroup(gi);
+        actions.appendChild(btnRename); actions.appendChild(btnRemove);
+        head.appendChild(actions);
+
+        const grid = document.createElement('div');
+        grid.className = 'products';
+        if(!g.items || g.items.length===0){
+          const p = document.createElement('p'); p.className='muted'; p.textContent='В группе нет товаров.'; grid.appendChild(p);
+        } else {
+          g.items.forEach((item, ii)=>{
+            const card = document.createElement('div'); card.className='product';
+            card.innerHTML = `
+              <div class="row" style="justify-content:space-between;align-items:center">
+                <span class="name">${escapeHtml(item.name)}</span>
+                <span class="pill">${item.weighted? 'весовой' : 'штучный'}</span>
+              </div>
+              <div class="price">${money(item.price)} ₽${item.weighted? '<span class="muted">/кг</span>':''}</div>
+              <div class="row" style="gap:8px">
+                <button class="btn" style="flex:1" onclick="sellItem(${gi},${ii})">Продать</button>
+                <button class="btn-ghost" style="flex:1" onclick="editItem(${gi},${ii})">Редактировать</button>
+                <button class="btn-danger" style="flex:0 0 auto" title="Удалить" onclick="removeItem(${gi},${ii})">✕</button>
+              </div>
+            `;
+            grid.appendChild(card);
+          });
+        }
+        box.appendChild(head);
+        box.appendChild(grid);
+        wrap.appendChild(box);
+      });
+    }
+
+    function renderReceipt(){
+      const tbody = document.getElementById('receiptBody');
+      tbody.innerHTML = '';
+      let total = 0;
+      receipt.forEach((line, idx)=>{
+        const sum = (Number(line.price)||0) * (Number(line.qty)||0);
+        total += sum;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${escapeHtml(line.name)}${line.weighted? ' <span class="muted">(весовой)</span>':''}</td>
+          <td class="right">${money(line.price)} ₽${line.weighted? '<span class=\"muted\">/кг</span>':''}</td>
+          <td class="right">${formatQty(line.qty, line.weighted)}</td>
+          <td class="right"><b>${money(sum)} ₽</b></td>
+          <td class="right">
+            <button class="btn-ghost" onclick="changeQty(${idx})">Изм.</button>
+            <button class="btn-danger" onclick="removeReceiptLine(${idx})">✕</button>
+          </td>`;
+        tbody.appendChild(tr);
+      });
+      document.getElementById('totalAmount').textContent = money(total) + ' ₽';
+    }
+
+    function renderHistory(){
+      const box = document.getElementById('historyContainer');
+      box.innerHTML = '';
+      if(receiptsHistory.length===0){
+        box.innerHTML = '<p class="muted">История пуста.</p>';
+        return;
+      }
+      receiptsHistory.forEach((r, i)=>{
+        const div = document.createElement('div'); div.className='history-item';
+        const head = document.createElement('div'); head.className='history-head';
+        head.innerHTML = `<div><b>Чек #${r.id}</b> <span class="muted">— ${escapeHtml(r.date)}</span></div>
+                          <div><b>${money(r.total)} ₽</b></div>`;
+        const list = document.createElement('div');
+        list.className='chips';
+        r.items.forEach(it=>{
+          const chip = document.createElement('div'); chip.className='chip';
+          chip.textContent = `${it.name} × ${formatQty(it.qty, it.weighted)} = ${money(it.price*it.qty)} ₽`;
+          list.appendChild(chip);
+        });
+        const tools = document.createElement('div'); tools.style.marginTop='8px';
+        const btnDel = document.createElement('button'); btnDel.className='btn-danger'; btnDel.textContent='Удалить чек'; btnDel.onclick=()=>deleteReceipt(i);
+        tools.appendChild(btnDel);
+
+        div.appendChild(head); div.appendChild(list); div.appendChild(tools);
+        box.appendChild(div);
+      });
+    }
+
+    // --- Действия с группами/товарами ---
+    function addGroup(){
+      const name = document.getElementById('groupName').value.trim();
+      if(!name) return alert('Введите название группы');
+      groups.push({ name, items:[] });
+      document.getElementById('groupName').value='';
+      persist(); renderGroupSelect(); renderGroups();
+    }
+
+    function renameGroup(gi){
+      const cur = groups[gi].name;
+      const name = prompt('Новое название группы:', cur);
+      if(name && name.trim()){
+        groups[gi].name = name.trim();
+        persist(); renderGroupSelect(); renderGroups();
+      }
+    }
+
+    function removeGroup(gi){
+      if(!confirm('Удалить группу и все её товары?')) return;
+      groups.splice(gi,1);
+      persist(); renderGroupSelect(); renderGroups();
+    }
+
+    function addProduct(){
+      if(groups.length===0) return alert('Сначала создайте группу');
+      const gi = Number(document.getElementById('groupSelect').value);
+      const name = document.getElementById('productName').value.trim();
+      const price = parseFloat(String(document.getElementById('productPrice').value).replace(',','.'));
+      const weighted = document.getElementById('productWeighted').value === 'true';
+      if(!name) return alert('Введите название товара');
+      if(!isFinite(price) || price<=0) return alert('Введите корректную цену (> 0)');
+      groups[gi].items.push({ name, price, weighted });
+      document.getElementById('productName').value='';
+      document.getElementById('productPrice').value='';
+      persist(); renderGroups();
+    }
+
+    function editItem(gi, ii){
+      const it = groups[gi].items[ii];
+      const name = prompt('Название товара:', it.name) ?? it.name;
+      let priceStr = prompt('Цена (за ед/кг):', String(it.price));
+      if(priceStr===null) priceStr = String(it.price);
+      const weighted = confirm('Сделать товар весовым? ОК = весовой, Отмена = штучный');
+      const price = parseFloat(String(priceStr).replace(',','.'));
+      if(!name.trim()) return;
+      if(!isFinite(price) || price<=0) return alert('Неверная цена');
+      groups[gi].items[ii] = { name: name.trim(), price, weighted };
+      persist(); renderGroups();
+    }
+
+    function removeItem(gi, ii){
+      if(!confirm('Удалить товар?')) return;
+      groups[gi].items.splice(ii,1);
+      persist(); renderGroups();
+    }
+
+    // --- Продажа ---
+    function sellItem(gi, ii){
+      const it = groups[gi].items[ii];
+      let qty = 1;
+      if(it.weighted){
+        const inp = prompt(`Введите вес (кг) для «${it.name}»`, '0.10');
+        if(inp===null) return; // отмена
+        qty = parseFloat(String(inp).replace(',','.'));
+      } else {
+        const inp = prompt(`Количество (шт) для «${it.name}»`, '1');
+        if(inp===null) return;
+        qty = parseFloat(String(inp).replace(',','.'));
+      }
+      if(!isFinite(qty) || qty<=0) return alert('Некорректное количество');
+      // Всегда добавляем НОВУЮ строку
+      receipt.push({ name: it.name, price: it.price, qty, weighted: !!it.weighted });
+      renderReceipt();
+    }
+
+    function changeQty(lineIndex){
+      const line = receipt[lineIndex];
+      const promptText = line.weighted ? 'Новый вес (кг)' : 'Новое количество (шт)';
+      const inp = prompt(`${promptText} для «${line.name}»`, String(line.qty));
+      if(inp===null) return;
+      const qty = parseFloat(String(inp).replace(',','.'));
+      if(!isFinite(qty) || qty<=0) return alert('Некорректное значение');
+      receipt[lineIndex].qty = qty;
+      renderReceipt();
+    }
+
+    function removeReceiptLine(i){
+      receipt.splice(i,1); renderReceipt();
+    }
+
+    function clearReceipt(){
+      if(receipt.length===0) return;
+      if(!confirm('Очистить текущий чек?')) return;
+      receipt = []; renderReceipt();
+    }
+
+    function promptDiscount(){
+      if(receipt.length===0) return alert('Чек пуст');
+      const v = prompt('Введите скидку на чек (в %, например 5 или 10):', '0');
+      if(v===null) return;
+      let pct = parseFloat(String(v).replace(',','.'));
+      if(!isFinite(pct) || pct<0) return alert('Некорректная скидка');
+      if(pct===0){ renderReceipt(); return; }
+      // применяем визуально — добавим отрицательную строку «Скидка»
+      const totalBefore = receipt.reduce((s,i)=>s + i.price*i.qty, 0);
+      const disc = +(totalBefore * (pct/100)).toFixed(2);
+      receipt.push({ name:`Скидка ${pct}%`, price:-disc, qty:1, weighted:false });
+      renderReceipt();
+    }
+
+    function saveReceipt(){
+      if(receipt.length===0) return alert('Чек пуст');
+      const total = receipt.reduce((s,i)=> s + (Number(i.price)||0)*(Number(i.qty)||0), 0);
+      const now = new Date();
+      const rec = {
+        id: Date.now(),
+        date: now.toLocaleString(),
+        items: receipt.map(x=>({ ...x })),
+        total: +total.toFixed(2)
+      };
+      receiptsHistory.unshift(rec);
+      persist();
+      receipt = [];
+      renderReceipt(); renderHistory();
+      alert('Чек сохранён');
+    }
+
+    function deleteReceipt(idx){
+      if(!confirm('Удалить этот чек из истории?')) return;
+      receiptsHistory.splice(idx,1);
+      persist(); renderHistory();
+    }
+
+    // --- Вспомогательное ---
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[m]));
+    }
+    function formatQty(qty, weighted){
+      return weighted ? `${Number(qty).toFixed(3)} кг` : `${Number(qty)} шт`;
+    }
+
+    // --- Инициализация ---
+    ensureDefaultGroup();
+    persist();
+    renderGroupSelect();
+    renderGroups();
+    renderReceipt();
+    renderHistory();
+  </script>
+</body>
+</html>

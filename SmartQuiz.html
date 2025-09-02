@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MultiQuiz - Универсальная викторина</title>
+  <style>
+    :root {
+      --primary: #6c5ce7;
+      --secondary: #a29bfe;
+      --success: #00b894;
+      --danger: #d63031;
+      --warning: #fdcb6e;
+      --light: #f8f9fa;
+      --dark: #2d3436;
+      --card-bg: #ffffff;
+      --text: #2d3436;
+      --muted: #636e72;
+      --border: #dfe6e9;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+      min-height: 100vh;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+    }
+
+    .app {
+      width: 100%;
+      max-width: 800px;
+      background: var(--card-bg);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 35px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      position: relative;
+    }
+
+    .header h1 {
+      font-size: 36px;
+      color: var(--primary);
+      margin-bottom: 12px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+    }
+
+    .header p {
+      color: var(--muted);
+      font-size: 18px;
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    .language-selector {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+
+    .lang-btn {
+      padding: 12px 24px;
+      border: 2px solid var(--border);
+      border-radius: 50px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      font-size: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .lang-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+    }
+
+    .lang-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      justify-content: space-between;
+      margin-bottom: 25px;
+      flex-wrap: wrap;
+    }
+
+    .counter {
+      font-size: 18px;
+      color: var(--muted);
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .progress {
+      flex: 1;
+      height: 14px;
+      background: #eee;
+      border-radius: 999px;
+      overflow: hidden;
+      max-width: 450px;
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+
+    .bar {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      transition: width 0.5s ease;
+    }
+
+    .question {
+      font-size: 26px;
+      line-height: 1.5;
+      margin: 25px 0;
+      min-height: 80px;
+      text-align: center;
+      font-weight: 600;
+      background: var(--light);
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .options {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 30px;
+    }
+
+    .options button {
+      border: none;
+      padding: 20px 25px;
+      font-size: 19px;
+      color: white;
+      border-radius: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+      text-align: left;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .options button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .options button:hover::before {
+      left: 100%;
+    }
+
+    .options button:nth-child(1) { 
+      background: linear-gradient(135deg, #6c5ce7, #8c7ae6); 
+    }
+    .options button:nth-child(2) { 
+      background: linear-gradient(135deg, #00b894, #00cec9); 
+    }
+    .options button:nth-child(3) { 
+      background: linear-gradient(135deg, #fdcb6e, #ffeaa7); 
+    }
+    .options button:nth-child(4) { 
+      background: linear-gradient(135deg, #e17055, #fab1a0); 
+    }
+
+    .options button:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .options button:active {
+      transform: translateY(0);
+    }
+
+    .options button.correct {
+      background: linear-gradient(135deg, #00b894, #00cec9);
+    }
+
+    .options button.wrong {
+      background: linear-gradient(135deg, #d63031, #e17055);
+    }
+
+    .result {
+      text-align: center;
+      margin: 30px 0;
+      font-size: 26px;
+      font-weight: bold;
+    }
+
+    .medal {
+      font-size: 72px;
+      margin: 20px 0;
+      animation: bounce 1s infinite alternate;
+    }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to { transform: translateY(-15px); }
+    }
+
+    .actions {
+      display: flex;
+      gap: 18px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 15px;
+      padding: 18px 32px;
+      cursor: pointer;
+      color: white;
+      font-size: 17px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+
+    .btn:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary { 
+      background: linear-gradient(135deg, #6c5ce7, #8c7ae6); 
+    }
+    .btn-secondary { 
+      background: linear-gradient(135deg, #636e72, #b2bec3); 
+    }
+    .btn-success { 
+      background: linear-gradient(135deg, #00b894, #00cec9); 
+    }
+    .btn-danger { 
+      background: linear-gradient(135deg, #d63031, #e17055); 
+    }
+
+    .btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+    }
+
+    .footer {
+      margin-top: 35px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .file-btn {
+      background: linear-gradient(135deg, #a29bfe, #74b9ff) !important;
+    }
+
+    /* Анимации */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-10px); }
+      40% { transform: translateX(10px); }
+      60% { transform: translateX(-7px); }
+      80% { transform: translateX(7px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+
+    /* Конфетти */
+    .confetti {
+      position: fixed;
+      pointer-events: none;
+      font-size: 22px;
+      z-index: 1000;
+      opacity: 0;
+    }
+    @keyframes fall {
+      0% { transform: translateY(-60px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(80vh) rotate(180deg); opacity: 0; }
+    }
+    @keyframes rise {
+      0% { transform: translateY(0) scale(1); opacity: 1; }
+      100% { transform: translateY(-60vh) scale(0.8); opacity: 0; }
+    }
+    .fall { animation: fall 1.6s linear forwards; }
+    .rise { animation: rise 1.2s linear forwards; }
+
+    /* Адаптивность */
+    @media (max-width: 768px) {
+      .app { padding: 25px; border-radius: 20px; }
+      .header h1 { font-size: 28px; }
+      .question { font-size: 22px; padding: 20px; }
+      .options button { padding: 18px; font-size: 17px; }
+      .actions { flex-direction: column; }
+      .btn { width: 100%; }
+      .top { flex-direction: column; align-items: stretch; }
+      .progress { max-width: 100%; }
+      .medal { font-size: 60px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app" id="app">
+    <div class="header">
+      <h1 id="title">MultiQuiz</h1>
+      <p id="subtitle">Универсальная платформа для создания и прохождения викторин на разных языках</p>
+    </div>
+
+    <div class="language-selector">
+      <button class="lang-btn active" onclick="changeLanguage('ru')">Русский</button>
+      <button class="lang-btn" onclick="changeLanguage('en')">English</button>
+      <button class="lang-btn" onclick="changeLanguage('ar')">العربية</button>
+    </div>
+
+    <div class="actions">
+      <input type="file" id="jsonFile" class="file-input" accept=".json">
+      <button class="btn file-btn" onclick="document.getElementById('jsonFile').click()">
+        📁 Загрузить викторину
+      </button>
+      <button class="btn btn-success" onclick="loadSampleQuiz()">
+        🚀 Начать демо-викторину
+      </button>
+    </div>
+
+    <div class="top" id="quiz-ui" style="display: none">
+      <div class="counter" id="counter"></div>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+    </div>
+
+    <div class="question" id="question" style="display: none"></div>
+    <div class="options" id="options" style="display: none"></div>
+
+    <div class="result" id="result" style="display: none">
+      <div id="score-text"></div>
+      <div class="medal" id="medal"></div>
+      <div id="message"></div>
+    </div>
+
+    <div class="actions" id="result-actions" style="display: none">
+      <button class="btn btn-primary" onclick="restartQuiz()" id="restart-btn"></button>
+      <button class="btn btn-secondary" onclick="shareResults()" id="share-btn"></button>
+      <button class="btn btn-danger" onclick="newQuiz()" id="newquiz-btn"></button>
+    </div>
+
+    <div class="footer">
+      <p>MultiQuiz © 2024 - Универсальная платформа для викторин</p>
+      <p id="footer-text">Поддержка русского, английского и арабского языков</p>
+    </div>
+  </div>
+
+  <script>
+    // ==================== МНОГОЯЗЫЧНЫЕ ТЕКСТЫ ====================
+    const translations = {
+      ru: {
+        title: "MultiQuiz",
+        subtitle: "Универсальная платформа для создания и прохождения викторин",
+        loadBtn: "📁 Загрузить викторину",
+        startBtn: "🚀 Начать демо-викторину",
+        question: "Вопрос",
+        of: "из",
+        score: "Счет",
+        excellent: "Отлично! Превосходный результат!",
+        good: "Очень хорошо! Отличные знания!",
+        tryAgain: "Хорошая попытка! Попробуйте еще раз!",
+        restart: "⟳ Попробовать снова",
+        share: "📤 Поделиться результатом",
+        newQuiz: "🔄 Новая викторина",
+        medals: ["🏆", "🥈", "🥉"],
+        defaultTitle: "Демонстрационная викторина",
+        defaultDesc: "Пример викторины с вопросами разной тематики"
+      },
+      en: {
+        title: "MultiQuiz",
+        subtitle: "Universal platform for creating and taking quizzes",
+        loadBtn: "📁 Load Quiz",
+        startBtn: "🚀 Start Demo Quiz",
+        question: "Question",
+        of: "of",
+        score: "Score",
+        excellent: "Excellent! Outstanding result!",
+        good: "Very good! Great knowledge!",
+        tryAgain: "Good try! Try again!",
+        restart: "⟳ Try Again",
+        share: "📤 Share Results",
+        newQuiz: "🔄 New Quiz",
+        medals: ["🏆", "🥈", "🥉"],
+        defaultTitle: "Demo Quiz",
+        defaultDesc: "Sample quiz with various questions"
+      },
+      ar: {
+        title: "MultiQuiz",
+        subtitle: "منصة عالمية لإنشاء واجتياز المسابقات",
+        loadBtn: "📁 تحميل المسابقة",
+        startBtn: "🚀 بدء المسابقة التجريبية",
+        question: "السؤال",
+        of: "من",
+        score: "النقاط",
+        excellent: "ممتاز! نتيجة رائعة!",
+        good: "جيد جداً! معرفة ممتازة!",
+        tryAgain: "محاولة جيدة! حاول مرة أخرى!",
+        restart: "⟳ إعادة المحاولة",
+        share: "📤 مشاركة النتيجة",
+        newQuiz: "🔄 مسابقة جديدة",
+        medals: ["🏆", "🥈", "🥉"],
+        defaultTitle: "مسابقة تجريبية",
+        defaultDesc: "مسابقة نموذجية بأسئلة متنوعة"
+      }
+    };
+
+    // ==================== ПЕРЕМЕННЫЕ СОСТОЯНИЯ ====================
+    let currentLanguage = 'ru';
+    let questions = [];
+    let currentQuestion = 0;
+    let score = 0;
+    let quizTitle = "";
+    let quizDescription = "";
+
+    // ==================== ИНИЦИАЛИЗАЦИЯ ====================
+    function init() {
+      document.getElementById('jsonFile').addEventListener('change', handleFileUpload);
+      updateLanguageUI();
+    }
+
+    // ==================== СМЕНА ЯЗЫКА ====================
+    function changeLanguage(lang) {
+      currentLanguage = lang;
+      
+      // Обновляем кнопки языка
+      document.querySelectorAll('.lang-btn').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      updateLanguageUI();
+      
+      // Если есть активная викторина, обновляем вопросы
+      if (questions.length > 0) {
+        updateQuestionUI();
+      }
+    }
+
+    function updateLanguageUI() {
+      const t = translations[currentLanguage];
+      
+      document.getElementById('title').textContent = t.title;
+      document.getElementById('subtitle').textContent = t.subtitle;
+      document.querySelector('.file-btn').textContent = t.loadBtn;
+      document.querySelector('.btn-success').textContent = t.startBtn;
+      
+      if (document.getElementById('restart-btn')) {
+        document.getElementById('restart-btn').textContent = t.restart;
+        document.getElementById('share-btn').textContent = t.share;
+        document.getElementById('newquiz-btn').textContent = t.newQuiz;
+      }
+    }
+
+    // ==================== ЗАГРУЗКА ВИКТОРИНЫ ====================
+    function handleFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const quizData = JSON.parse(e.target.result);
+          loadQuiz(quizData);
+        } catch (error) {
+          alert(currentLanguage === 'ar' ? 
+            'خطأ في تحميل الملف' : 
+            currentLanguage === 'en' ? 'Error loading file' : 'Ошибка загрузки файла');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function loadQuiz(quizData) {
+      if (!quizData.questions || !Array.isArray(quizData.questions)) {
+        alert(currentLanguage === 'ar' ? 
+          'صيغة الملف غير صحيحة' : 
+          currentLanguage === 'en' ? 'Invalid file format' : 'Неверный формат файла');
+        return;
+      }
+
+      questions = quizData.questions;
+      quizTitle = quizData.title || translations[currentLanguage].defaultTitle;
+      quizDescription = quizData.description || translations[currentLanguage].defaultDesc;
+
+      showQuizUI();
+      startQuiz();
+    }
+
+    function loadSampleQuiz() {
+      const sampleQuiz = {
+        title: translations[currentLanguage].defaultTitle,
+        description: translations[currentLanguage].defaultDesc,
+        questions: [
+          {
+            question: {
+              ru: "Какая самая длинная река в мире?",
+              en: "What is the longest river in the world?",
+              ar: "ما هو أطول نهر في العالم؟"
+            },
+            options: {
+              ru: ["Амазонка", "Нил", "Миссисипи", "Янцзы"],
+              en: ["Amazon", "Nile", "Mississippi", "Yangtze"],
+              ar: ["الأمازون", "النيل", "الميسيسيبي", "اليانغتسي"]
+            },
+            correct: 1,
+            explanation: {
+              ru: "Нил - самая длинная река в мире (6650 км)",
+              en: "The Nile is the longest river in the world (4,135 miles)",
+              ar: "النيل هو أطول نهر في العالم (6650 كم)"
+            }
+          },
+          {
+            question: {
+              ru: "Сколько планет в Солнечной системе?",
+              en: "How many planets are in the Solar System?",
+              ar: "كم عدد الكواكب في النظام الشمسي؟"
+            },
+            options: {
+              ru: ["7", "8", "9", "10"],
+              en: ["7", "8", "9", "10"],
+              ar: ["7", "8", "9", "10"]
+            },
+            correct: 1,
+            explanation: {
+              ru: "В Солнечной системе 8 планет",
+              en: "There are 8 planets in the Solar System",
+              ar: "هناك 8 كواكب في النظام الشمسي"
+            }
+          },
+          {
+            question: {
+              ru: "Какая самая большая планета в Солнечной системе?",
+              en: "What is the largest planet in the Solar System?",
+              ar: "ما هو أكبر كوكب في النظام الشمسي؟"
+            },
+            options: {
+              ru: ["Земля", "Сатурн", "Юпитер", "Нептун"],
+              en: ["Earth", "Saturn", "Jupiter", "Neptune"],
+              ar: ["الأرض", "زحل", "المشتري", "نبتون"]
+            },
+            correct: 2,
+            explanation: {
+              ru: "Юпитер - самая большая планета",
+              en: "Jupiter is the largest planet",
+              ar: "المشتري هو أكبر كوكب"
+            }
+          }
+        ]
+      };
+
+      loadQuiz(sampleQuiz);
+    }
+
+    // ==================== ИНТЕРФЕЙС ВИКТОРИНЫ ====================
+    function showQuizUI() {
+      document.getElementById('quiz-ui').style.display = 'flex';
+      document.getElementById('question').style.display = 'block';
+      document.getElementById('options').style.display = 'grid';
+      document.getElementById('title').textContent = quizTitle;
+      document.getElementById('subtitle').textContent = quizDescription;
+    }
+
+    function hideQuizUI() {
+      document.getElementById('quiz-ui').style.display = 'none';
+      document.getElementById('question').style.display = 'none';
+      document.getElementById('options').style.display = 'none';
+    }
+
+    function showResults() {
+      document.getElementById('result').style.display = 'block';
+      document.getElementById('result-actions').style.display = 'flex';
+      
+      const t = translations[currentLanguage];
+      const percentage = (score / questions.length) * 100;
+      
+      let message = '';
+      let medal = '';
+      
+      if (percentage >= 80) {
+        message = t.excellent;
+        medal = t.medals[0];
+      } else if (percentage >= 60) {
+        message = t.good;
+        medal = t.medals[1];
+      } else {
+        message = t.tryAgain;
+        medal = t.medals[2];
+      }
+      
+      document.getElementById('score-text').textContent = 
+        `${t.score}: ${score} / ${questions.length}`;
+      document.getElementById('medal').textContent = medal;
+      document.getElementById('message').textContent = message;
+      
+      // Обновляем текст кнопок
+      document.getElementById('restart-btn').textContent = t.restart;
+      document.getElementById('share-btn').textContent = t.share;
+      document.getElementById('newquiz-btn').textContent = t.newQuiz;
+    }
+
+    function updateQuestionUI() {
+      if (currentQuestion >= questions.length) {
+        endQuiz();
+        return;
+      }
+
+      const t = translations[currentLanguage];
+      const question = questions[currentQuestion];
+      
+      document.getElementById('counter').textContent = 
+        `${t.question} ${currentQuestion + 1} ${t.of} ${questions.length}`;
+      document.getElementById('bar').style.width = 
+        `${((currentQuestion + 1) / questions.length) * 100}%`;
+      
+      // Показываем вопрос на текущем языке
+      const questionText = question.question[currentLanguage] || question.question;
+      document.getElementById('question').textContent = questionText;
+      
+      // Показываем варианты ответов
+      const optionsContainer = document.getElementById('options');
+      optionsContainer.innerHTML = '';
+      
+      const options = question.options[currentLanguage] || question.options;
+      options.forEach((option, index) => {
+        const button = document.createElement('button');
+        button.textContent = option;
+        button.onclick = () => checkAnswer(index);
+        optionsContainer.appendChild(button);
+      });
+    }
+
+    function checkAnswer(selectedIndex) {
+      const question = questions[currentQuestion];
+      const buttons = document.querySelectorAll('.options button');
+      
+      // Отключаем все кнопки
+      buttons.forEach(btn => btn.disabled = true);
+      
+      if (selectedIndex === question.correct) {
+        buttons[selectedIndex].classList.add('correct');
+        score++;
+        createConfetti('✨', 'fall', 15);
+      } else {
+        buttons[selectedIndex].classList.add('wrong');
+        buttons[question.correct].classList.add('correct');
+        createConfetti('💔', 'rise', 8);
+        document.getElementById('app').classList.add('shake');
+        setTimeout(() => {
+          document.getElementById('app').classList.remove('shake');
+        }, 400);
+      }
+      
+      setTimeout(() => {
+        currentQuestion++;
+        updateQuestionUI();
+      }, 1500);
+    }
+
+    function startQuiz() {
+      currentQuestion = 0;
+      score = 0;
+      updateQuestionUI();
+    }
+
+    function endQuiz() {
+      hideQuizUI();
+      showResults();
+      if (score >= questions.length * 0.8) {
+        createConfetti('🎉', 'fall', 25);
+      }
+    }
+
+    function restartQuiz() {
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('result-actions').style.display = 'none';
+      showQuizUI();
+      startQuiz();
+    }
+
+    function newQuiz() {
+      document.getElementById('result').style.display = 'none';
+      document.getElementById('result-actions').style.display = 'none';
+      hideQuizUI();
+      
+      questions = [];
+      document.getElementById('title').textContent = translations[currentLanguage].title;
+      document.getElementById('subtitle').textContent = translations[currentLanguage].subtitle;
+    }
+
+    function shareResults() {
+      const t = translations[currentLanguage];
+      const shareText = `${t.title}: ${t.score} ${score}/${questions.length} - ${quizTitle}`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: t.title,
+          text: shareText
+        });
+      } else {
+        navigator.clipboard.writeText(shareText);
+        alert(currentLanguage === 'ar' ? 
+          'تم نسخ النتيجة' : 
+          currentLanguage === 'en' ? 'Results copied' : 'Результат скопирован');
+      }
+    }
+
+    // ==================== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ====================
+    function createConfetti(symbol, animation, count) {
+      for (let i = 0; i < count; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = `confetti ${animation}`;
+        confetti.textContent = symbol;
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.top = animation === 'fall' ? '-10vh' : (60 + Math.random() * 20) + 'vh';
+        confetti.style.fontSize = (18 + Math.random() * 14) + 'px';
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => confetti.remove(), 2000);
+      }
+    }
+
+    // Запускаем инициализацию при загрузке
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

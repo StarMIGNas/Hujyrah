@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <title>نقاط البيع المصغرة — البلاط</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --primary:#e91e63;
+      --primary-700:#c2185b;
+      --bg:#f6f7fb;
+      --card:#ffffff;
+      --text:#222;
+      --muted:#6b7280;
+      --border:#e5e7eb;
+      --tile:#ffffff;
+      --tile-hover:#fff4f8;
+      --shadow:0 6px 18px rgba(0,0,0,.08);
+      --radius:16px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg); color:var(--text);
+    }
+    .container{max-width:1100px; margin:24px auto; padding:0 16px;}
+    header{
+      display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+    .title{font-size:1.6rem; font-weight:800; letter-spacing:.2px; color:var(--primary);}
+    .toolbar{display:flex; gap:8px; flex-wrap:wrap}
+    .btn{
+      appearance:none; border:1px solid var(--border); background:#fff; color:#111;
+      padding:10px 14px; border-radius:12px; font-weight:600; cursor:pointer;
+      transition:.2s transform, .2s box-shadow, .2s background;
+      box-shadow:0 2px 8px rgba(0,0,0,.04);
+    }
+    .btn:hover{transform:translateY(-1px)}
+    .btn-primary{background:var(--primary); color:#fff; border-color:transparent;}
+    .btn-primary:hover{background:var(--primary-700)}
+    .layout{
+      display:grid; grid-template-columns:1.1fr .9fr; gap:16px;
+    }
+    @media (max-width: 980px){.layout{grid-template-columns:1fr}}
+    .section{
+      background:var(--card); border:1px solid var(--border); border-radius:var(--radius);
+      box-shadow:var(--shadow); padding:16px;
+    }
+    .section h2{margin:0 0 8px 0; font-size:1.05rem}
+    /* group header */
+    .group{
+      margin-top:12px; border:1px solid var(--border); border-radius:14px; padding:10px 12px;
+      background:#fff;
+    }
+    .group-head{
+      display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;
+    }
+    .group-name{font-weight:800}
+    /* tiles */
+    .grid{
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:10px;
+    }
+    .tile{
+      background:var(--tile); border:1px solid var(--border); border-radius:14px; padding:12px;
+      display:flex; flex-direction:column; gap:6px; cursor:pointer; min-height:96px;
+      transition:.15s box-shadow, .15s border-color, .15s transform;
+    }
+    .tile:hover{box-shadow:0 10px 20px rgba(233,30,99,.08); border-color:#f9cbd8; background:var(--tile-hover); transform:translateY(-2px)}
+    .p-name{font-weight:700; line-height:1.2}
+    .p-price{margin-top:auto; font-weight:800; color:var(--primary)}
+    /* receipt */
+    .receipt-head{
+      display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:6px;
+    }
+    .table-wrap{max-height:360px; overflow:auto; border:1px solid var(--border); border-radius:12px}
+    table{width:100%; border-collapse:collapse; font-size:.95rem; background:#fff}
+    thead th{
+      position:sticky; top:0; background:#fafafa; border-bottom:1px solid var(--border);
+      font-weight:700; text-align:right; padding:10px;
+    }
+    tbody td{border-bottom:1px solid var(--border); padding:10px; vertical-align:middle}
+    .qty{
+      display:inline-flex; gap:6px; align-items:center; border:1px solid var(--border);
+      border-radius:10px; padding:4px 6px; background:#fff;
+    }
+    .icon-btn{
+      border:none; background:#fff; border-radius:8px; padding:4px 8px; cursor:pointer;
+      border:1px solid var(--border);
+    }
+    .icon-btn:hover{background:#f6f6f6}
+    .money{font-weight:800; color:var(--primary)}
+    .sumline{
+      display:flex; align-items:center; justify-content:space-between; margin-top:12px; font-size:1.05rem;
+      border-top:2px solid var(--primary); padding-top:10px;
+    }
+    .muted{color:var(--muted)}
+    .empty{
+      text-align:center; color:var(--muted); padding:20px 8px;
+    }
+    /* modal */
+    .modal-backdrop{
+      position:fixed; inset:0; background:rgba(17,24,39,.4); display:none; align-items:center; justify-content:center; padding:16px; z-index:50;
+    }
+    .modal{background:#fff; border:1px solid var(--border); border-radius:18px; box-shadow:var(--shadow); max-width:920px; width:100%; padding:14px;}
+    .modal-head{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px}
+    .tabs{display:flex; gap:8px; flex-wrap:wrap}
+    .tab{padding:8px 12px; border:1px solid var(--border); border-radius:10px; cursor:pointer; background:#fff; font-weight:700}
+    .tab.active{background:var(--primary); color:#fff; border-color:transparent}
+    .modal-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    @media (max-width: 780px){.modal-grid{grid-template-columns:1fr}}
+    .card{border:1px solid var(--border); border-radius:12px; padding:12px; background:#fff}
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+    .row-3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px}
+    input, select{width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-size:.95rem}
+    .list{display:flex; flex-direction:column; gap:8px; max-height:330px; overflow:auto}
+    .item{
+      display:flex; justify-content:space-between; gap:8px; align-items:center; border:1px solid var(--border); border-radius:10px; padding:8px;
+    }
+    .item-actions{display:flex; gap:6px}
+    .link{background:none; border:none; color:var(--primary); font-weight:700; cursor:pointer}
+    .danger{color:#d92d20}
+    .footer-actions{display:flex; gap:8px; justify-content:flex-start; margin-top:8px}
+    .pill{display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border:1px solid var(--border); border-radius:999px; background:#fff}
+    .search{display:flex; gap:8px; align-items:center; padding:8px 10px; background:#fafafa; border:1px solid var(--border); border-radius:12px}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="title">🍦 نقاط البيع المصغرة — البلاط</div>
+      <div class="toolbar">
+        <button class="btn" id="btnManage">إدارة الكتالوج</button>
+        <button class="btn" id="btnHistory">سجل الفواتير</button>
+        <button class="btn btn-primary" id="btnClear">مسح الفاتورة</button>
+        <span class="pill muted">جميع البيانات: LocalStorage</span>
+      </div>
+    </header>
+
+    <div class="layout">
+      <section class="section" id="menuSection">
+        <h2>القائمة</h2>
+        <div id="groupsContainer"></div>
+        <div class="empty" id="menuEmpty" style="display:none">أضف المجموعات والمنتجات في "إدارة الكتالوج"</div>
+      </section>
+
+      <section class="section">
+        <div class="receipt-head">
+          <h2>الفاتورة الحالية</h2>
+          <span class="muted" id="itemsCount">0 عناصر</span>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>المنتج</th>
+                <th>السعر</th>
+                <th>الكمية</th>
+                <th>المبلغ</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="receiptBody">
+              <tr><td colspan="5" class="empty">فارغ — أضف المنتجات من البلاط</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="sumline">
+          <div class="muted">شامل الضريبة (إذا كانت مطبقة)</div>
+          <div class="money" id="totalSum">0 ر.س</div>
+        </div>
+
+        <div class="footer-actions" style="margin-top:10px">
+          <button class="btn btn-primary" id="btnSave">حفظ الفاتورة</button>
+        </div>
+
+        <div class="section" id="historySection" style="margin-top:12px; display:none">
+          <h2>الفواتير المحفوظة</h2>
+          <div id="historyList" class="list"></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- MODAL: Catalog management -->
+  <div class="modal-backdrop" id="catalogModal">
+    <div class="modal">
+      <div class="modal-head">
+        <div style="font-weight:800">إدارة الكتالوج</div>
+        <button class="btn" id="catalogClose">إغلاق</button>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-tab="tabGroups">المجموعات</button>
+        <button class="tab" data-tab="tabProducts">المنتجات</button>
+      </div>
+      <div class="modal-grid" style="margin-top:8px">
+        <!-- Groups -->
+        <div id="tabGroups" class="card">
+          <div class="row">
+            <input id="groupName" placeholder="اسم المجموعة (مثل: آيس كريم)" />
+            <button class="btn btn-primary" id="addGroup">➕ إضافة مجموعة</button>
+          </div>
+          <div class="list" id="groupsList" style="margin-top:10px"></div>
+        </div>
+        <!-- Products -->
+        <div id="tabProducts" class="card" style="display:none">
+          <div class="row-3">
+            <select id="productGroup"></select>
+            <input id="productName" placeholder="اسم المنتج" />
+            <input id="productPrice" type="number" step="0.01" placeholder="السعر" />
+          </div>
+          <div class="footer-actions">
+            <button class="btn btn-primary" id="addProduct">➕ إضافة منتج</button>
+          </div>
+          <div class="search" style="margin-top:8px">
+            <input id="productSearch" placeholder="بحث في المنتجات..." style="flex:1; border:none; background:transparent; outline:none"/>
+          </div>
+          <div class="list" id="productsList" style="margin-top:8px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Data Keys
+    const KEY_GROUPS = 'miniPOS_groups';
+    const KEY_PRODUCTS = 'miniPOS_products';
+    const KEY_RECEIPTS = 'miniPOS_savedReceipts';
+
+    // ===== State
+    let groups = JSON.parse(localStorage.getItem(KEY_GROUPS) || '[]');               // ["Group"]
+    let products = JSON.parse(localStorage.getItem(KEY_PRODUCTS) || '[]');           // [{id,name,price,group}]
+    let receipt = []; // [{id,name,price,qty}]
+    let savedReceipts = JSON.parse(localStorage.getItem(KEY_RECEIPTS) || '[]');      // [{id,date,items,total}]
+
+    // Demo seed if empty (small nice set)
+    if (groups.length === 0 && products.length === 0) {
+      groups = ["آيس كريم", "مشروبات"];
+      products = [
+        p("آيس كريم فانيليا", 15, "آيس كريم"),
+        p("آيس كريم شوكولاتة", 18, "آيس كريم"),
+        p("آيس كريم فراولة", 16, "آيس كريم"),
+        p("آيس كريم نعناع", 20, "آيس كريم"),
+        p("ميلك شيك فراولة", 25, "مشروبات"),
+        p("ميلك شيك موز", 23, "مشروبات"),
+        p("ميلك شيك شوكولاتة", 26, "مشروبات"),
+        p("عصير برتقال", 12, "مشروبات"),
+      ];
+      persistCatalog();
+    }
+
+    function uid(){ return Math.random().toString(36).slice(2,10) }
+    function p(name, price, group){ return { id: uid(), name, price: Number(price), group } }
+
+    function persistCatalog(){
+      localStorage.setItem(KEY_GROUPS, JSON.stringify(groups));
+      localStorage.setItem(KEY_PRODUCTS, JSON.stringify(products));
+    }
+    function persistReceipts(){
+      localStorage.setItem(KEY_RECEIPTS, JSON.stringify(savedReceipts));
+    }
+
+    // ===== Render Menu (Tiles)
+    function renderMenu(){
+      const wrap = document.getElementById('groupsContainer');
+      const empty = document.getElementById('menuEmpty');
+      wrap.innerHTML = '';
+      const grouped = {};
+      products.forEach(pr=>{
+        if(!grouped[pr.group]) grouped[pr.group]=[];
+        grouped[pr.group].push(pr);
+      });
+      const presentGroups = groups.filter(g => grouped[g]?.length);
+
+      if (presentGroups.length === 0){
+        empty.style.display = 'block';
+        return;
+      }
+      empty.style.display = 'none';
+
+      presentGroups.forEach(g=>{
+        const box = document.createElement('div');
+        box.className='group';
+        const head = document.createElement('div');
+        head.className='group-head';
+        head.innerHTML = `<div class="group-name">${g}</div>`;
+        const grid = document.createElement('div');
+        grid.className='grid';
+        grouped[g].forEach(pr=>{
+          const tile = document.createElement('div');
+          tile.className='tile';
+          tile.innerHTML = `
+            <div class="p-name">${escapeHtml(pr.name)}</div>
+            <div class="p-price">${formatMoney(pr.price)}</div>
+          `;
+          tile.addEventListener('click', ()=> addToReceipt(pr));
+          grid.appendChild(tile);
+        });
+        box.appendChild(head);
+        box.appendChild(grid);
+        wrap.appendChild(box);
+      });
+    }
+
+    // ===== Receipt
+    function addToReceipt(pr){
+      const found = receipt.find(r=>r.id===pr.id);
+      if(found){ found.qty += 1; }
+      else { receipt.push({ id: pr.id, name: pr.name, price: pr.price, qty: 1 }); }
+      renderReceipt();
+    }
+    function incRow(id){ const r=receipt.find(x=>x.id===id); if(!r)return; r.qty++; renderReceipt(); }
+    function decRow(id){ const r=receipt.find(x=>x.id===id); if(!r)return; r.qty=Math.max(1, r.qty-1); renderReceipt(); }
+    function setQty(id, val){ const r=receipt.find(x=>x.id===id); if(!r)return; r.qty = Math.max(1, Number(val)||1); renderReceipt(false); }
+    function setPrice(id, val){ const r=receipt.find(x=>x.id===id); if(!r)return; r.price = Math.max(0, Number(val)||0); renderReceipt(false); }
+    function removeRow(id){ receipt = receipt.filter(r=>r.id!==id); renderReceipt(); }
+    function clearReceipt(){ if(receipt.length && confirm('مسح الفاتورة الحالية؟')){ receipt=[]; renderReceipt(); } }
+
+    function renderReceipt(recalc=true){
+      const body = document.getElementById('receiptBody');
+      body.innerHTML = '';
+      if (receipt.length===0){
+        body.innerHTML = `<tr><td colspan="5" class="empty">فارغ — أضف المنتجات من البلاط</td></tr>`;
+        document.getElementById('itemsCount').textContent = '0 عناصر';
+        document.getElementById('totalSum').textContent = formatMoney(0);
+        return;
+      }
+      let total = 0, count=0;
+      receipt.forEach(row=>{
+        const sum = row.price * row.qty;
+        total += sum; count += row.qty;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${escapeHtml(row.name)}</strong></td>
+          <td style="width:140px">
+            <input type="number" step="0.01" value="${row.price}" style="width:120px" />
+          </td>
+          <td style="width:180px">
+            <div class="qty">
+              <button class="icon-btn" title="-" aria-label="minus">−</button>
+              <input type="number" value="${row.qty}" style="width:64px; text-align:center" />
+              <button class="icon-btn" title="+" aria-label="plus">+</button>
+            </div>
+          </td>
+          <td class="money">${formatMoney(sum)}</td>
+          <td style="width:56px"><button class="icon-btn" title="حذف">🗑️</button></td>
+        `;
+        const [priceInput] = tr.querySelectorAll('input[type="number"]');
+        const qtyInput = tr.querySelectorAll('input[type="number"]')[1];
+        const minus = tr.querySelectorAll('button.icon-btn')[0];
+        const plus = tr.querySelectorAll('button.icon-btn')[1];
+        const del = tr.querySelectorAll('button.icon-btn')[2];
+        priceInput.addEventListener('input', e=> setPrice(row.id, e.target.value));
+        qtyInput.addEventListener('input', e=> setQty(row.id, e.target.value));
+        minus.addEventListener('click', ()=> decRow(row.id));
+        plus.addEventListener('click', ()=> incRow(row.id));
+        del.addEventListener('click', ()=> removeRow(row.id));
+        body.appendChild(tr);
+      });
+      document.getElementById('itemsCount').textContent = `${count} عناصر`;
+      document.getElementById('totalSum').textContent = formatMoney(total);
+    }
+
+    // ===== History
+    function saveReceipt(){
+      if (receipt.length===0){ alert('الفاتورة فارغة.'); return; }
+      const total = receipt.reduce((s,r)=>s+r.price*r.qty,0);
+      const rec = { id: Date.now(), date: new Date().toLocaleString(), items: JSON.parse(JSON.stringify(receipt)), total };
+      savedReceipts.unshift(rec);
+      persistReceipts();
+      renderHistory();
+      clearReceipt();
+      alert('تم حفظ الفاتورة!');
+    }
+    function renderHistory(){
+      const list = document.getElementById('historyList');
+      list.innerHTML = '';
+      if (savedReceipts.length===0){
+        list.innerHTML = `<div class="empty">لا توجد فواتير محفوظة</div>`;
+        return;
+      }
+      savedReceipts.forEach(r=>{
+        const div = document.createElement('div');
+        div.className='item';
+        const itemsPreview = r.items.slice(0,3).map(i=>`${i.name}×${i.qty}`).join(', ') + (r.items.length>3?' …':'');
+        div.innerHTML = `
+          <div>
+            <div style="font-weight:800">فاتورة #${r.id}</div>
+            <div class="muted" style="font-size:.9rem">${r.date} • ${itemsPreview}</div>
+          </div>
+          <div class="item-actions">
+            <span class="money" style="margin-left:8px">${formatMoney(r.total)}</span>
+            <button class="link" title="تحميل">تحميل</button>
+            <button class="link danger" title="حذف">حذف</button>
+          </div>
+        `;
+        const [btnLoad, btnDel] = div.querySelectorAll('button.link');
+        btnLoad.addEventListener('click', ()=>{
+          if (!confirm('تحميل الفاتورة للتعديل؟ سيتم استبدال الفاتورة الحالية.')) return;
+          receipt = JSON.parse(JSON.stringify(r.items));
+          renderReceipt();
+          window.scrollTo({top:0, behavior:'smooth'});
+        });
+        btnDel.addEventListener('click', ()=>{
+          if (!confirm('حذف هذه الفاتورة؟')) return;
+          savedReceipts = savedReceipts.filter(x=>x.id!==r.id);
+          persistReceipts();
+          renderHistory();
+        });
+        list.appendChild(div);
+      });
+    }
+
+    // ===== Catalog Modal (Groups & Products)
+    const modal = document.getElementById('catalogModal');
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(t=>t.addEventListener('click', ()=>{
+      tabs.forEach(x=>x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById('tabGroups').style.display = t.dataset.tab==='tabGroups'?'block':'none';
+      document.getElementById('tabProducts').style.display = t.dataset.tab==='tabProducts'?'block':'none';
+    }));
+
+    function openModal(){ modal.style.display='flex'; renderGroupsAdmin(); renderProductsAdmin(); }
+    function closeModal(){ modal.style.display='none'; }
+
+    function renderGroupsAdmin(){
+      const list = document.getElementById('groupsList');
+      list.innerHTML='';
+      if (groups.length===0){ list.innerHTML = `<div class="empty">لا توجد مجموعات</div>`; }
+      groups.forEach(g=>{
+        const el = document.createElement('div');
+        el.className='item';
+        el.innerHTML = `
+          <div style="font-weight:700">${escapeHtml(g)}</div>
+          <div class="item-actions">
+            <button class="link">إعادة تسمية</button>
+            <button class="link danger">حذف</button>
+          </div>
+        `;
+        const [btnEdit, btnDelete] = el.querySelectorAll('button.link');
+        btnEdit.addEventListener('click', ()=>{
+          const name = prompt('اسم المجموعة الجديد:', g);
+          if(!name || !name.trim()) return;
+          const newName = name.trim();
+          // rename in products
+          products = products.map(p=> p.group===g ? {...p, group:newName} : p);
+          // rename in groups array
+          groups = groups.map(x=> x===g ? newName : x);
+          persistCatalog(); renderGroupsAdmin(); renderProductsAdmin(); renderMenu();
+        });
+        btnDelete.addEventListener('click', ()=>{
+          if(!confirm(`حذف المجموعة "${g}"؟ سيتم الاحتفاظ بالمنتجات ولكن بدون مجموعة.`)) return;
+          groups = groups.filter(x=>x!==g);
+          products = products.map(p=> p.group===g ? {...p, group:''} : p);
+          persistCatalog(); renderGroupsAdmin(); renderProductsAdmin(); renderMenu();
+        });
+        list.appendChild(el);
+      });
+    }
+
+    function renderProductsAdmin(){
+      const sel = document.getElementById('productGroup');
+      sel.innerHTML = `<option value="">(بدون مجموعة)</option>` + groups.map(g=>`<option>${escapeHtml(g)}</option>`).join('');
+      const list = document.getElementById('productsList');
+      const query = (document.getElementById('productSearch').value||'').toLowerCase().trim();
+      const data = products
+        .slice()
+        .sort((a,b)=> (a.group||'').localeCompare(b.group||'') || a.name.localeCompare(b.name))
+        .filter(p=> !query || p.name.toLowerCase().includes(query) || (p.group||'').toLowerCase().includes(query));
+      list.innerHTML='';
+      if (data.length===0){ list.innerHTML = `<div class="empty">لا توجد منتجات</div>`; return; }
+      data.forEach(p=>{
+        const el = document.createElement('div');
+        el.className='item';
+        el.innerHTML = `
+          <div>
+            <div style="font-weight:800">${escapeHtml(p.name)}</div>
+            <div class="muted" style="font-size:.9rem">${p.group || '— بدون مجموعة'} • ${formatMoney(p.price)}</div>
+          </div>
+          <div class="item-actions">
+            <button class="link">تعديل</button>
+            <button class="link danger">حذف</button>
+          </div>
+        `;
+        const [btnEdit, btnDel] = el.querySelectorAll('button.link');
+        btnEdit.addEventListener('click', ()=>{
+          const newName = prompt('اسم المنتج:', p.name);
+          if (!newName || !newName.trim()) return;
+          const newPrice = Number(prompt('السعر:', p.price));
+          if (!(newPrice>=0)) return;
+          let newGroup = prompt('المجموعة (اترك فارغًا لعدم وجود مجموعة):', p.group || '');
+          newGroup = (newGroup||'').trim();
+          if (newGroup && !groups.includes(newGroup)) { // auto-create missing group
+            if (confirm(`المجموعة "${newGroup}" غير موجودة. إنشائها؟`)) groups.push(newGroup);
+          }
+          products = products.map(x=> x.id===p.id ? {...x, name:newName.trim(), price:newPrice, group:newGroup} : x);
+          persistCatalog(); renderProductsAdmin(); renderGroupsAdmin(); renderMenu();
+        });
+        btnDel.addEventListener('click', ()=>{
+          if(!confirm(`حذف المنتج "${p.name}"؟`)) return;
+          products = products.filter(x=>x.id!==p.id);
+          persistCatalog(); renderProductsAdmin(); renderMenu();
+        });
+        list.appendChild(el);
+      });
+    }
+
+    // Add new group
+    document.getElementById('addGroup').addEventListener('click', ()=>{
+      const name = (document.getElementById('groupName').value||'').trim();
+      if(!name) return alert('أدخل اسم المجموعة');
+      if (groups.includes(name)) return alert('هذه المجموعة موجودة بالفعل');
+      groups.push(name); document.getElementById('groupName').value='';
+      persistCatalog(); renderGroupsAdmin(); renderProductsAdmin(); renderMenu();
+    });
+
+    // Add new product
+    document.getElementById('addProduct').addEventListener('click', ()=>{
+      const groupVal = document.getElementById('productGroup').value;
+      const name = (document.getElementById('productName').value||'').trim();
+      const price = Number(document.getElementById('productPrice').value);
+      if(!name) return alert('أدخل اسم المنتج');
+      if(!(price>=0)) return alert('أدخل سعرًا صحيحًا');
+      // Create if group text not in select (shouldn't happen with select)
+      if (groupVal && !groups.includes(groupVal)) groups.push(groupVal);
+      products.push(p(name, price, groupVal));
+      document.getElementById('productName').value='';
+      document.getElementById('productPrice').value='';
+      persistCatalog(); renderProductsAdmin(); renderMenu();
+    });
+
+    // Search products
+    document.getElementById('productSearch').addEventListener('input', renderProductsAdmin);
+
+    // Modal open/close
+    document.getElementById('btnManage').addEventListener('click', openModal);
+    document.getElementById('catalogClose').addEventListener('click', closeModal);
+    modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
+
+    // History toggle
+    document.getElementById('btnHistory').addEventListener('click', ()=>{
+      const sec = document.getElementById('historySection');
+      sec.style.display = (sec.style.display==='none' || !sec.style.display) ? 'block' : 'none';
+      if (sec.style.display==='block') renderHistory();
+    });
+
+    // Save / Clear
+    document.getElementById('btnSave').addEventListener('click', saveReceipt);
+    document.getElementById('btnClear').addEventListener('click', clearReceipt);
+
+    // Utils
+    function formatMoney(v){ return `${(Number(v)||0).toFixed(2)} ر.س`; }
+    function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;' }[m])); }
+
+    // Initial Paint
+    renderMenu();
+    renderReceipt();
+  </script>
+</body>
+</html>
